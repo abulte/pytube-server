@@ -33,6 +33,7 @@ def do_import(crf="35", date="", force=False):
             # 35 : 271Mo / 1,23Go
             # 28 : 827Mo / 1,23Go
             "-crf", crf,
+            "-y",
             str(out)
         ]
         ffpb.main(argv=argv)
