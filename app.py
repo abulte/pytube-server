@@ -5,7 +5,7 @@ from flask import Flask, render_template, send_from_directory
 
 import settings
 
-VID_PATH = Path(settings.get("output_path"))
+VID_PATH = Path(settings.get("output_path", "./output"))
 
 app = Flask(__name__)
 jinja_partials.register_extensions(app)
