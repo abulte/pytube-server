@@ -2,3 +2,4 @@ Flask
 jinja-partials
 minicli
 ffpb
+gunicorn
