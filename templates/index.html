@@ -10,9 +10,15 @@
     <h1>Videos</h1>
     {% for video in videos %}
         <div>
-            <a href="{{ url_for('video', path=video.relative_to(root)) }}">
-                <img src="{{ url_for('stream_data_file', path=video.with_suffix('.jpg').relative_to(root)) }}" alt="{{ video.relative_to(root) }}">
+            <a href="{{ url_for('video', path=video.path.relative_to(root)) }}">
+                <img src="{{ url_for('stream_data_file', path=video.path.with_suffix('.jpg').relative_to(root)) }}" alt="{{ video.path.relative_to(root) }}">
             </a>
+            {% for (k, v) in video.metadata.items() %}
+            <dl>
+                <dt>{{ k }}</dt>
+                <dd>{{ v }}</dd>
+            </dl>
+            {% endfor %}
         </div>
     {% endfor %}
 </body>

@@ -3,3 +3,4 @@ jinja-partials
 minicli
 ffpb
 gunicorn
+ffmpeg-python

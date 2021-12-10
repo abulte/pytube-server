@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import jinja_partials
+import ffmpeg
 from flask import Flask, render_template, send_from_directory
 
 import settings
@@ -13,7 +14,14 @@ jinja_partials.register_extensions(app)
 
 @app.route("/")
 def index():
-    videos = VID_PATH.glob("**/*.mp4")
+    _videos = VID_PATH.glob("**/*.mp4")
+    # FIXME: dict comprehension
+    videos = []
+    for v in _videos:
+        videos.append({
+            "path": v,
+            "metadata": ffmpeg.probe(str(v)).get("format"),
+        })
     return render_template("index.html", videos=videos, root=VID_PATH)
 
 

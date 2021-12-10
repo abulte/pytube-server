@@ -21,7 +21,7 @@ def do_import(crf="35", date="", force=False):
             print(f"{out} not matching date")
             continue
 
-        if not out.exists() and not force:
+        if not out.exists() or force:
             print(v, out)
             out.parent.mkdir(parents=True, exist_ok=True)
             argv = [
@@ -29,12 +29,14 @@ def do_import(crf="35", date="", force=False):
                 "-movflags", "+faststart",
                 "-vcodec", "libx264",
                 "-acodec", "aac",
+                "-map_metadata:g", "0:g",
                 # 35 : 271Mo / 1,23Go
                 # 28 : 827Mo / 1,23Go
                 "-crf", crf,
                 "-y",
                 str(out)
             ]
+            print(' '.join(argv))
             ffpb.main(argv=argv)
         else:
             print(f"{out} already exists, skipping")
@@ -42,7 +44,7 @@ def do_import(crf="35", date="", force=False):
         # make thumbnail
         tb_path = out.with_suffix('.jpg')
         print(tb_path)
-        if not tb_path.exists() and not force:
+        if not tb_path.exists() or force:
             argv = [
                 "-ss", "1",
                 "-i", str(out),
@@ -54,6 +56,16 @@ def do_import(crf="35", date="", force=False):
                 str(tb_path)
             ]
             ffpb.main(argv=argv)
+
+
+@cli
+def metadata(filepath):
+    # path = Path(filepath)
+    import ffmpeg
+    videos = INPUT_PATH.glob("**/*.MP4")
+    for v in videos:
+        res = ffmpeg.probe(str(v))
+        print(res['format']['tags']['creation_time'])
 
 
 if __name__ == "__main__":
