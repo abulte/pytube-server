@@ -20,23 +20,40 @@ def do_import(crf="35", date="", force=False):
         if date and rel.parts[0] != date:
             print(f"{out} not matching date")
             continue
-        if out.exists() and not force:
+
+        if not out.exists() and not force:
+            print(v, out)
+            out.parent.mkdir(parents=True, exist_ok=True)
+            argv = [
+                "-i", str(v),
+                "-movflags", "+faststart",
+                "-vcodec", "libx264",
+                "-acodec", "aac",
+                # 35 : 271Mo / 1,23Go
+                # 28 : 827Mo / 1,23Go
+                "-crf", crf,
+                "-y",
+                str(out)
+            ]
+            ffpb.main(argv=argv)
+        else:
             print(f"{out} already exists, skipping")
-            continue
-        print(v, out)
-        out.parent.mkdir(parents=True, exist_ok=True)
-        argv = [
-            "-i", str(v),
-            "-movflags", "+faststart",
-            "-vcodec", "libx264",
-            "-acodec", "aac",
-            # 35 : 271Mo / 1,23Go
-            # 28 : 827Mo / 1,23Go
-            "-crf", crf,
-            "-y",
-            str(out)
-        ]
-        ffpb.main(argv=argv)
+
+        # make thumbnail
+        tb_path = out.with_suffix('.jpg')
+        print(tb_path)
+        if not tb_path.exists() and not force:
+            argv = [
+                "-ss", "1",
+                "-i", str(out),
+                "-vframes", "1",
+                # 16:9
+                "-s", "854x480",
+                "-f", "image2",
+                "-y",
+                str(tb_path)
+            ]
+            ffpb.main(argv=argv)
 
 
 if __name__ == "__main__":

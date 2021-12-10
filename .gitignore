@@ -1,2 +1,3 @@
-*.mp4
-*.MP4
+output/
+!output/.gitkeep
+data/

@@ -23,5 +23,5 @@ def video(path):
 
 
 @app.route("/videos/<path:path>/download")
-def stream_video(path):
+def stream_data_file(path):
     return send_from_directory(VID_PATH, path)
