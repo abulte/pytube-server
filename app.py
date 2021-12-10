@@ -14,14 +14,12 @@ jinja_partials.register_extensions(app)
 
 @app.route("/")
 def index():
-    _videos = VID_PATH.glob("**/*.mp4")
-    # FIXME: dict comprehension
-    videos = []
-    for v in _videos:
-        videos.append({
+    videos = [
+        {
             "path": v,
             "metadata": ffmpeg.probe(str(v)).get("format"),
-        })
+        } for v in VID_PATH.glob("**/*.mp4")
+    ]
     return render_template("index.html", videos=videos, root=VID_PATH)
 
 
