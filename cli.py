@@ -58,15 +58,5 @@ def do_import(crf="35", date="", force=False):
             ffpb.main(argv=argv)
 
 
-@cli
-def metadata(filepath):
-    # path = Path(filepath)
-    import ffmpeg
-    videos = INPUT_PATH.glob("**/*.MP4")
-    for v in videos:
-        res = ffmpeg.probe(str(v))
-        print(res['format']['tags']['creation_time'])
-
-
 if __name__ == "__main__":
     run()
