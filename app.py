@@ -74,7 +74,9 @@ def stream_data_file(path):
 
     return Response(
         chunk, 206,
-        mimetype="video/mp4", content_type="video/mp4", direct_passthrough=True,
+        mimetype="video/mp4",
+        content_type="video/mp4",
+        direct_passthrough=True,
         headers={
             "Content-Range": "bytes {0}-{1}/{2}".format(
                 start, start + length - 1, file_size
