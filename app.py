@@ -72,14 +72,12 @@ def stream_data_file(path):
 
     chunk, start, length, file_size = get_chunk(path, byte_s, byte_e)
 
-    resp = Response(
+    return Response(
         chunk, 206,
-        mimetype="video/mp4", content_type="video/mp4", direct_passthrough=True
+        mimetype="video/mp4", content_type="video/mp4", direct_passthrough=True,
+        headers={
+            "Content-Range": "bytes {0}-{1}/{2}".format(
+                start, start + length - 1, file_size
+            )
+        }
     )
-    resp.headers.add(
-        "Content-Range", "bytes {0}-{1}/{2}".format(
-            start, start + length - 1, file_size
-        )
-    )
-
-    return resp
