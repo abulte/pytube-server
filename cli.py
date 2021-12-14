@@ -1,6 +1,8 @@
 from pathlib import Path
 
+import contextily
 import ffpb
+import gpmf
 
 from minicli import cli, run
 
@@ -43,7 +45,6 @@ def do_import(crf="35", date="", force=False):
 
         # make thumbnail
         tb_path = out.with_suffix('.jpg')
-        print(tb_path)
         if not tb_path.exists() or force:
             argv = [
                 "-ss", "1",
@@ -56,6 +57,19 @@ def do_import(crf="35", date="", force=False):
                 str(tb_path)
             ]
             ffpb.main(argv=argv)
+
+        # extract gpx image
+        route_path = out.with_suffix('.route.png')
+        if not route_path.exists() or force:
+            stream = gpmf.io.extract_gpmf_stream(str(v))
+            try:
+                gpmf.gps_plot.plot_gps_trace_from_stream(
+                    stream,
+                    map_provider=contextily.providers.OpenTopoMap,
+                    output_path=str(route_path),
+                )
+            except Exception as e:
+                print(f"[ERROR] generating route: {e}")
 
 
 if __name__ == "__main__":

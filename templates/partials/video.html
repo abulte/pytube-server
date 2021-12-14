@@ -1,1 +1,9 @@
-<video width="100%" style="max-width: 1024px;" controls src="{{ url_for('stream_data_file', path=video_path) }}"></video>
+<video width="100%" style="max-width: 1024px;" controls
+    src="{{ url_for('stream_data_file', path=video.path) }}">
+</video>
+
+{% if video.route_path %}
+<img width="100%" src="{{ url_for('stream_data_file', path=video.route_path) }}" alt="">
+<legend>© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors</legend>
+
+{% endif %}

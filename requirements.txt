@@ -5,3 +5,4 @@ ffpb
 gunicorn
 ffmpeg-python
 humanize
+-e git+https://github.com/abulte/pygpmf.git#egg=gpmf

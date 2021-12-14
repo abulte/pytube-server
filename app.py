@@ -36,13 +36,25 @@ def index():
     return render_template("index.html", videos=videos, root=VID_PATH)
 
 
-@app.route("/videos/<path:path>")
-def video(path):
-    return render_template("video.html", video=Path(path))
+@app.route("/videos/<path:rel_path>")
+def video(rel_path):
+    rel_path = Path(rel_path)
+    video_path = VID_PATH / rel_path
+    # avoid path traversal attempts
+    video_path.resolve().relative_to(video_path.resolve())
+    if not video_path.exists():
+        raise NotFound()
+    has_image = video_path.with_suffix(".route.png").exists()
+    return render_template("video.html", video={
+        "path": rel_path,
+        "route_path": rel_path.with_suffix(".route.png") if has_image else None
+    })
 
 
 def get_chunk(path, byte1=None, byte2=None):
     full_path = VID_PATH / Path(path)
+    # avoid path traversal attempts
+    full_path.resolve().relative_to(VID_PATH.resolve())
     if not full_path.exists():
         raise NotFound()
 

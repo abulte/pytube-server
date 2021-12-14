@@ -11,7 +11,12 @@
         <a href="{{ url_for('video', path=video.path.relative_to(root)) }}">
         <img src="{{ url_for('stream_data_file', path=video.path.with_suffix('.jpg').relative_to(root)) }}" alt="{{ video.path.relative_to(root) }}" class="card-img-top">
         </a>
-        <div class="card-header"><strong>{{ video.path.stem }}</strong></div>
+        <div class="card-header">
+            <strong>
+                {% if video.path.with_suffix('.route.png').exists() %}🗺&nbsp;{% endif %}
+                {{ video.path.stem }}
+            </strong>
+        </div>
         <ul class="list-group list-group-flush">
             <li class="list-group-item">{{ video.metadata.tags.creation_time|datetimeformat }}</li>
             <li class="list-group-item">{{ video.metadata.duration|durationformat }}</li>
