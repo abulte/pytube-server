@@ -3,6 +3,7 @@
 - [ ] fix metadata on 2016-01-01 ride (ffmpeg cli?)
 - [ ] gunicorn service (supervisor)
 - [ ] infinite scroll w/ htmx and/or filters
+- [x] chunk videos for rows
 - [x] attribution on maps
 - [x] stream video by chunks
 - [x] order by date

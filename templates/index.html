@@ -3,26 +3,30 @@
 {% extends "_layout.html" %}
 
 {% block content %}
-<h1>Videos</h1>
 <div class="row">
-{% for video in videos %}
-<div class="col-sm-6">
-    <div class="card">
-        <a href="{{ url_for('video', path=video.path.relative_to(root)) }}">
-        <img src="{{ url_for('stream_data_file', path=video.path.with_suffix('.jpg').relative_to(root)) }}" alt="{{ video.path.relative_to(root) }}" class="card-img-top">
-        </a>
-        <div class="card-header">
-            <strong>
-                {% if video.path.with_suffix('.route.png').exists() %}🗺&nbsp;{% endif %}
-                {{ video.path.stem }}
-            </strong>
+    <h1>Videos</h1>
+</div>
+{% for videos in rows %}
+<div class="row videos">
+    {% for video in videos %}
+    <div class="col-sm-6">
+        <div class="card">
+            <a href="{{ url_for('video', rel_path=video.path.relative_to(root)) }}">
+            <img src="{{ url_for('stream_data_file', path=video.path.with_suffix('.jpg').relative_to(root)) }}" alt="{{ video.path.relative_to(root) }}" class="card-img-top">
+            </a>
+            <div class="card-header">
+                <strong>
+                    {% if video.path.with_suffix('.route.png').exists() %}🗺&nbsp;{% endif %}
+                    {{ video.path.stem }}
+                </strong>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">{{ video.metadata.tags.creation_time|datetimeformat }}</li>
+                <li class="list-group-item">{{ video.metadata.duration|durationformat }}</li>
+            </ul>
         </div>
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item">{{ video.metadata.tags.creation_time|datetimeformat }}</li>
-            <li class="list-group-item">{{ video.metadata.duration|durationformat }}</li>
-          </ul>
     </div>
-
+    {% endfor %}
 </div>
 {% endfor %}
 {% endblock %}

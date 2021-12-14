@@ -6,6 +6,7 @@ from pathlib import Path
 import jinja_partials
 import ffmpeg
 import humanize
+import more_itertools
 
 from flask import Flask, render_template, request, Response
 from werkzeug.exceptions import NotFound
@@ -33,7 +34,12 @@ def index():
         key=lambda x: x["metadata"]["tags"]["creation_time"],
         reverse=True
     )
-    return render_template("index.html", videos=videos, root=VID_PATH)
+    rows = [
+        list(row)
+        for row in more_itertools.chunked(videos, 2)
+    ]
+
+    return render_template("index.html", rows=rows, root=VID_PATH)
 
 
 @app.route("/videos/<path:rel_path>")
