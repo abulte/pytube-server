@@ -4,3 +4,4 @@ minicli
 ffpb
 gunicorn
 ffmpeg-python
+humanize

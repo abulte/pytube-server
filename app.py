@@ -1,9 +1,12 @@
+from datetime import datetime
 import re
 
 from pathlib import Path
 
 import jinja_partials
 import ffmpeg
+import humanize
+
 from flask import Flask, render_template, request, Response
 from werkzeug.exceptions import NotFound
 
@@ -25,12 +28,17 @@ def index():
             "metadata": ffmpeg.probe(str(v)).get("format"),
         } for v in VID_PATH.glob("**/*.mp4")
     ]
+    videos = sorted(
+        videos,
+        key=lambda x: x["metadata"]["tags"]["creation_time"],
+        reverse=True
+    )
     return render_template("index.html", videos=videos, root=VID_PATH)
 
 
 @app.route("/videos/<path:path>")
 def video(path):
-    return render_template("video.html", video=path)
+    return render_template("video.html", video=Path(path))
 
 
 def get_chunk(path, byte1=None, byte2=None):
@@ -83,3 +91,20 @@ def stream_data_file(path):
             )
         }
     )
+
+
+@app.template_filter()
+def datetimeformat(value):
+    if not value:
+        return
+    _d = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")
+    return f"{humanize.naturaltime(_d)} — {_d.strftime('%Y-%m-%d %H:%M:%S')}"
+
+
+@app.template_filter()
+def durationformat(value):
+    if not value:
+        return
+    return humanize.precisedelta(float(value))
+    # _d = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")
+    # return _d.strftime("%Y-%m-%d %H:%M:%S")

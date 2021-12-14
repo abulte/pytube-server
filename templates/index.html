@@ -1,25 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Videos</title>
-</head>
-<body>
-    <h1>Videos</h1>
-    {% for video in videos %}
-        <div>
-            <a href="{{ url_for('video', path=video.path.relative_to(root)) }}">
-                <img src="{{ url_for('stream_data_file', path=video.path.with_suffix('.jpg').relative_to(root)) }}" alt="{{ video.path.relative_to(root) }}">
-            </a>
-            {% for (k, v) in video.metadata.items() %}
-            <dl>
-                <dt>{{ k }}</dt>
-                <dd>{{ v }}</dd>
-            </dl>
-            {% endfor %}
-        </div>
-    {% endfor %}
-</body>
-</html>
+{% set title = "Videos" %}
+
+{% extends "_layout.html" %}
+
+{% block content %}
+<h1>Videos</h1>
+<div class="row">
+{% for video in videos %}
+<div class="col-sm-6">
+    <div class="card">
+        <a href="{{ url_for('video', path=video.path.relative_to(root)) }}">
+        <img src="{{ url_for('stream_data_file', path=video.path.with_suffix('.jpg').relative_to(root)) }}" alt="{{ video.path.relative_to(root) }}" class="card-img-top">
+        </a>
+        <div class="card-header"><strong>{{ video.path.stem }}</strong></div>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">{{ video.metadata.tags.creation_time|datetimeformat }}</li>
+            <li class="list-group-item">{{ video.metadata.duration|durationformat }}</li>
+          </ul>
+    </div>
+
+</div>
+{% endfor %}
+{% endblock %}
