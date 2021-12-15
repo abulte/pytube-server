@@ -1,8 +1,8 @@
-{% set title = video.path.stem %}
+{% set title = video.title %}
 
 {% extends "_layout.html" %}
 
 {% block content %}
-<h1>{{ video.path.stem }}</h1>
+<h1>{{ video.title }}</h1>
 {{ render_partial("partials/video.html", video=video) }}
 {% endblock %}

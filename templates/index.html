@@ -28,18 +28,18 @@
     {% for video in videos %}
     <div class="col-sm-6">
         <div class="card">
-            <a href="{{ url_for('video', rel_path=video.path.relative_to(root)) }}">
-            <img src="{{ url_for('media.static', filename=video.path.with_suffix('.jpg').relative_to(root)) }}" alt="{{ video.path.relative_to(root) }}" class="card-img-top">
+            <a href="{{ url_for('video', rel_path=video.path) }}">
+            <img src="{{ url_for('media.static', filename=video.thumbnail) }}" alt="{{ video.path }}" class="card-img-top">
             </a>
             <div class="card-header">
                 <strong>
-                    {% if video.path.with_suffix('.route.png').exists() %}🗺&nbsp;{% endif %}
-                    {{ video.path.stem }}
+                    {% if video.route %}🗺&nbsp;{% endif %}
+                    {{ video.title }}
                 </strong>
             </div>
             <ul class="list-group list-group-flush">
-                <li class="list-group-item">{{ video.metadata.tags.creation_time|datetimeformat }}</li>
-                <li class="list-group-item">{{ video.metadata.duration|durationformat }}</li>
+                <li class="list-group-item">{{ video.created_at|datetimeformat }}</li>
+                <li class="list-group-item">{{ video.duration|durationformat }}</li>
             </ul>
         </div>
     </div>

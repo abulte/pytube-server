@@ -92,6 +92,7 @@ def do_import(crf="35", date="", force=False):
             "created_at": datetime.strptime(creation_date, date_fmt),
             "duration": float(fm_meta["duration"]),
             "metadata": fm_meta,
+            "title": out.stem,
         }, ["path"])
 
 

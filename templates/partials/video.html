@@ -2,6 +2,6 @@
     src="{{ url_for('stream_data_file', path=video.path) }}">
 </video>
 
-{% if video.route_path %}
-<img width="100%" src="{{ url_for('media.static', filename=video.route_path) }}" alt="">
+{% if video.route %}
+<img width="100%" src="{{ url_for('media.static', filename=video.route) }}" alt="">
 {% endif %}
