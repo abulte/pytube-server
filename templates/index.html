@@ -3,18 +3,18 @@
 {% extends "_layout.html" %}
 
 {% block content %}
-<h1>Videos</h1>
-<div class="row videos align-items-center">
+<form class="row form align-items-center" hx-get="/" hx-target="#videos" hx-push-url="true">
     <div class="col-auto">
-        <input type="date" class="form-control" placeholder="Start" aria-label="Start" value="{{ first_date }}">
+        <input name="start" type="date" class="form-control" placeholder="Start" aria-label="Start" value="{{ start }}">
     </div>
     <div class="col-auto">
-        <input type="date" class="form-control" placeholder="End" aria-label="End" value="{{ isodatetoday() }}">
+        <input name="end" type="date" class="form-control" placeholder="End" aria-label="End" value="{{ end }}">
     </div>
     <div class="col-auto">
         <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="gridCheck">
-            <label class="form-check-label" for="gridCheck">
+            <input name="route" class="form-check-input" type="checkbox" id="route"
+                {% if route %}checked=""{% endif %}>
+            <label class="form-check-label" for="route">
                 🗺
             </label>
           </div>
@@ -22,28 +22,10 @@
     <div class="col-auto">
         <button type="submit" class="btn btn-primary">Search</button>
     </div>
+</form>
+
+<div id="videos">
+    {{ render_partial("partials/videos.html", rows=rows) }}
 </div>
-{% for videos in rows %}
-<div class="row videos">
-    {% for video in videos %}
-    <div class="col-sm-6">
-        <div class="card">
-            <a href="{{ url_for('video', rel_path=video.path) }}">
-            <img src="{{ url_for('media.static', filename=video.thumbnail) }}" alt="{{ video.path }}" class="card-img-top">
-            </a>
-            <div class="card-header">
-                <strong>
-                    {% if video.route %}🗺&nbsp;{% endif %}
-                    {{ video.title }}
-                </strong>
-            </div>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item">{{ video.created_at|datetimeformat }}</li>
-                <li class="list-group-item">{{ video.duration|durationformat }}</li>
-            </ul>
-        </div>
-    </div>
-    {% endfor %}
-</div>
-{% endfor %}
+
 {% endblock %}

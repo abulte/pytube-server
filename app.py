@@ -26,22 +26,47 @@ blueprint = Blueprint(
 app.register_blueprint(blueprint)
 
 
-@app.route("/")
-def index():
-    videos = db.table.all(order_by='-created_at')
-
-    rows = [
+def videos_to_rows(videos):
+    return [
         list(row)
         for row in more_itertools.chunked(videos, 2)
     ]
 
-    first = db.table.find_one(order_by='created_at')
-    first_date = first["created_at"].date().isoformat()
 
-    return render_template(
-        "index.html",
-        rows=rows, root=VID_PATH, first_date=first_date
-    )
+@app.route("/")
+def index():
+    start = request.args.get("start")
+    end = request.args.get("end")
+    route = request.args.get("route", "")
+
+    if not start:
+        first = db.table.find_one(order_by="created_at")
+        start = first["created_at"].date().isoformat()
+
+    if not end:
+        end = date.today().isoformat()
+
+    route_query = {"route": {"not": None}} if route else {}
+    videos = db.table.find(**{
+        "created_at": {
+            "gte": start,
+            "lte": end,
+        },
+        **route_query,
+    }, order_by="-created_at")
+
+    rows = videos_to_rows(videos)
+    kwargs = {
+        "rows": rows,
+        "start": start,
+        "end": end,
+        "route": route,
+    }
+
+    if "HX-Request" in request.headers:
+        return jinja_partials.render_partial("partials/videos.html", **kwargs)
+
+    return render_template("index.html", **kwargs)
 
 
 @app.route("/videos/<path:rel_path>")
@@ -119,10 +144,3 @@ def durationformat(value):
     if not value:
         return
     return humanize.precisedelta(float(value))
-
-
-@app.context_processor
-def utility_processor():
-    def isodatetoday():
-        return date.today().isoformat()
-    return dict(isodatetoday=isodatetoday)

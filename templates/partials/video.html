@@ -1,7 +1,0 @@
-<video width="100%" style="max-width: 1024px;" controls
-    src="{{ url_for('stream_data_file', path=video.path) }}">
-</video>
-
-{% if video.route %}
-<img width="100%" src="{{ url_for('media.static', filename=video.route) }}" alt="">
-{% endif %}
