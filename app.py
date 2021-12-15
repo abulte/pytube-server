@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 import re
 
 from pathlib import Path
@@ -16,6 +16,7 @@ import settings
 # 1 Mo
 CHUNK_SIZE = 1000000
 VID_PATH = Path(settings.get("output_path", "./output"))
+GP_DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 app = Flask(__name__)
 jinja_partials.register_extensions(app)
@@ -39,7 +40,13 @@ def index():
         for row in more_itertools.chunked(videos, 2)
     ]
 
-    return render_template("index.html", rows=rows, root=VID_PATH)
+    first = videos[-1]["metadata"]["tags"]["creation_time"]
+    first_date = datetime.strptime(first, GP_DATE_FORMAT).date().isoformat()
+
+    return render_template(
+        "index.html",
+        rows=rows, root=VID_PATH, first_date=first_date
+    )
 
 
 @app.route("/videos/<path:rel_path>")
@@ -115,7 +122,7 @@ def stream_data_file(path):
 def datetimeformat(value):
     if not value:
         return
-    _d = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")
+    _d = datetime.strptime(value, GP_DATE_FORMAT)
     return f"{humanize.naturaltime(_d)} — {_d.strftime('%Y-%m-%d %H:%M:%S')}"
 
 
@@ -124,5 +131,10 @@ def durationformat(value):
     if not value:
         return
     return humanize.precisedelta(float(value))
-    # _d = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")
-    # return _d.strftime("%Y-%m-%d %H:%M:%S")
+
+
+@app.context_processor
+def utility_processor():
+    def isodatetoday():
+        return date.today().isoformat()
+    return dict(isodatetoday=isodatetoday)

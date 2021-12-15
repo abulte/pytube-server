@@ -5,5 +5,14 @@ ffpb
 gunicorn
 ffmpeg-python
 humanize
--e git+https://github.com/abulte/pygpmf.git#egg=gpmf
 more-itertools
+
+-e git+https://github.com/abulte/pygpmf.git#egg=gpmf
+# dependencies from above, pb installing through github?
+numpy
+pandas
+gpxpy
+ffmpeg-python
+geopandas
+contextily
+descartes
