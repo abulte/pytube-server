@@ -8,7 +8,7 @@ import ffmpeg
 import humanize
 import more_itertools
 
-from flask import Flask, render_template, request, Response
+from flask import Flask, render_template, request, Response, Blueprint
 from werkzeug.exceptions import NotFound
 
 import settings
@@ -20,6 +20,11 @@ GP_DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 app = Flask(__name__)
 jinja_partials.register_extensions(app)
+blueprint = Blueprint(
+    "media", __name__,
+    static_url_path="/static/media", static_folder=VID_PATH,
+)
+app.register_blueprint(blueprint)
 
 
 @app.route("/")

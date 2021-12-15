@@ -3,7 +3,5 @@
 </video>
 
 {% if video.route_path %}
-<img width="100%" src="{{ url_for('stream_data_file', path=video.route_path) }}" alt="">
-<legend>© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors</legend>
-
+<img width="100%" src="{{ url_for('media.static', filename=video.route_path) }}" alt="">
 {% endif %}

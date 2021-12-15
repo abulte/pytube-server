@@ -29,7 +29,7 @@
     <div class="col-sm-6">
         <div class="card">
             <a href="{{ url_for('video', rel_path=video.path.relative_to(root)) }}">
-            <img src="{{ url_for('stream_data_file', path=video.path.with_suffix('.jpg').relative_to(root)) }}" alt="{{ video.path.relative_to(root) }}" class="card-img-top">
+            <img src="{{ url_for('media.static', filename=video.path.with_suffix('.jpg').relative_to(root)) }}" alt="{{ video.path.relative_to(root) }}" class="card-img-top">
             </a>
             <div class="card-header">
                 <strong>
