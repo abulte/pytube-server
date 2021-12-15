@@ -7,3 +7,4 @@ ffmpeg-python
 humanize
 more-itertools
 -e git+https://github.com/abulte/pygpmf.git#egg=gpmf
+dataset

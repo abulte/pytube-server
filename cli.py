@@ -1,12 +1,15 @@
+from datetime import datetime
 from pathlib import Path
 
 import contextily
+import ffmpeg
 import ffpb
 import gpmf
 
 from minicli import cli, run
 
 import settings
+import db
 
 INPUT_PATH = Path(settings.get("VIDEOS_PATH"))
 OUTPUT_PATH = Path(settings.get("OUTPUT_PATH", "./output"))
@@ -70,6 +73,26 @@ def do_import(crf="35", date="", force=False):
                 )
             except Exception as e:
                 print(f"[ERROR] generating route: {e}")
+
+        # register to DB
+        metadata = ffmpeg.probe(str(v))
+        fm_meta = metadata.get("format")
+        if not fm_meta or not fm_meta.get("tags"):
+            print(f"[ERROR] wrong metadata: {metadata}")
+            continue
+        creation_date = fm_meta["tags"]["creation_time"]
+        date_fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
+        route = str(route_path.relative_to(OUTPUT_PATH)) \
+            if route_path.exists() else None
+        db.table.upsert({
+            "path": str(out.relative_to(OUTPUT_PATH)),
+            "original_path": str(v),
+            "thumbnail": str(tb_path.relative_to(OUTPUT_PATH)),
+            "route": route,
+            "created_at": datetime.strptime(creation_date, date_fmt),
+            "duration": float(fm_meta["duration"]),
+            "metadata": fm_meta,
+        }, ["path"])
 
 
 if __name__ == "__main__":
