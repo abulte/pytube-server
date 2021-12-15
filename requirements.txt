@@ -7,8 +7,7 @@ ffmpeg-python
 humanize
 more-itertools
 
--e git+https://github.com/abulte/pygpmf.git#egg=gpmf
-# dependencies from above, pb installing through github?
+# dependencies from above below, pb installing through github?
 numpy
 pandas
 gpxpy
@@ -16,3 +15,4 @@ ffmpeg-python
 geopandas
 contextily
 descartes
+-e git+https://github.com/abulte/pygpmf.git#egg=gpmf
