@@ -13,10 +13,22 @@ import db
 
 INPUT_PATH = Path(settings.get("VIDEOS_PATH"))
 OUTPUT_PATH = Path(settings.get("OUTPUT_PATH", "./output"))
+DATE_FMT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 @cli(name="import")
 def do_import(crf="35", date="", force=False):
+    """
+    Convert videos in `PYT_VIDEOS_PATH` to compressed videos in
+    `PYT_OUTPUT_PATH`. It will also:
+        - extract a thumbnail
+        - extract a route (GPX) image if available
+        - populate a database with metadatas
+
+    :crf: compression factor
+    :date: process only from this date (tree folder based)
+    :force: force processing even if output files already exist
+    """
     videos = INPUT_PATH.glob("**/*.MP4")
     for v in videos:
         rel = v.relative_to(INPUT_PATH)
@@ -81,7 +93,6 @@ def do_import(crf="35", date="", force=False):
             print(f"[ERROR] wrong metadata: {metadata}")
             continue
         creation_date = fm_meta["tags"]["creation_time"]
-        date_fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
         route = str(route_path.relative_to(OUTPUT_PATH)) \
             if route_path.exists() else None
         db.table.upsert({
@@ -89,7 +100,7 @@ def do_import(crf="35", date="", force=False):
             "original_path": str(v),
             "thumbnail": str(tb_path.relative_to(OUTPUT_PATH)),
             "route": route,
-            "created_at": datetime.strptime(creation_date, date_fmt),
+            "created_at": datetime.strptime(creation_date, DATE_FMT),
             "duration": float(fm_meta["duration"]),
             "metadata": fm_meta,
             "title": out.stem,
