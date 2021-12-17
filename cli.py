@@ -26,7 +26,7 @@ def do_import(crf="35", date="", force=False):
         - populate a database with metadatas
 
     :crf: compression factor
-    :date: process only from this date (tree folder based)
+    :date: process only for this date (tree folder based)
     :force: force processing even if output files already exist
     """
     videos = INPUT_PATH.glob("**/*.MP4")
@@ -108,4 +108,14 @@ def do_import(crf="35", date="", force=False):
 
 
 if __name__ == "__main__":
+    print(f"""
+ _ __  _  _  _          _         
+| '_ \| || || |_  _  _ | |__  ___ 
+| .__/ \_. ||  _|| || ||  _ \/ -_)
+|_|    |__/  \__| \_._||____/\___|
+
+Input   : {INPUT_PATH.resolve()}
+Output  : {OUTPUT_PATH.resolve()}
+
+""")  # noqa
     run()
