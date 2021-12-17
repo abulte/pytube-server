@@ -6,10 +6,13 @@ import ffmpeg
 import ffpb
 import gpmf
 
+from dotenv import load_dotenv
 from minicli import cli, run
 
 import settings
 import db
+
+load_dotenv()
 
 INPUT_PATH = Path(settings.get("VIDEOS_PATH"))
 OUTPUT_PATH = Path(settings.get("OUTPUT_PATH", "./output"))
@@ -109,8 +112,8 @@ def do_import(crf="35", date="", force=False):
 
 if __name__ == "__main__":
     print(f"""
- _ __  _  _  _          _         
-| '_ \| || || |_  _  _ | |__  ___ 
+ _ __  _  _  _          _
+| '_ \| || || |_  _  _ | |__  ___
 | .__/ \_. ||  _|| || ||  _ \/ -_)
 |_|    |__/  \__| \_._||____/\___|
 
