@@ -8,10 +8,13 @@ import humanize
 import more_itertools
 
 from flask import Flask, render_template, request, Response, Blueprint
+from flask.cli import load_dotenv
 from werkzeug.exceptions import NotFound
 
 import db
 import settings
+
+load_dotenv()
 
 # 1 Mo
 CHUNK_SIZE = 1000000
