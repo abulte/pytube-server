@@ -16,6 +16,7 @@ import settings
 # 1 Mo
 CHUNK_SIZE = 1000000
 VID_PATH = Path(settings.get("output_path", "./output"))
+NB_VIDS_PER_ROW = 2
 
 app = Flask(__name__)
 jinja_partials.register_extensions(app)
@@ -24,12 +25,13 @@ blueprint = Blueprint(
     static_url_path="/static/media", static_folder=VID_PATH,
 )
 app.register_blueprint(blueprint)
+app.logger.debug(f"Input: {VID_PATH}")
 
 
 def videos_to_rows(videos):
     return [
         list(row)
-        for row in more_itertools.chunked(videos, 2)
+        for row in more_itertools.chunked(videos, NB_VIDS_PER_ROW)
     ]
 
 
@@ -38,6 +40,11 @@ def index():
     start = request.args.get("start")
     end = request.args.get("end")
     route = request.args.get("route", "")
+    page = int(request.args.get("page", 1))
+
+    # we want two rows
+    _limit = page * NB_VIDS_PER_ROW * 2
+    _offset = page * (_limit - NB_VIDS_PER_ROW)
 
     if not start:
         first = db.table.find_one(order_by="created_at")
@@ -53,7 +60,7 @@ def index():
             "lte": end,
         },
         **route_query,
-    }, order_by="-created_at")
+    }, order_by="-created_at", _limit=_limit, _offset=_offset)
 
     rows = videos_to_rows(videos)
     kwargs = {
@@ -61,6 +68,7 @@ def index():
         "start": start,
         "end": end,
         "route": route,
+        "page": page,
     }
 
     if "HX-Request" in request.headers:
