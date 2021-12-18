@@ -46,8 +46,8 @@ def index():
     page = int(request.args.get("page", 1))
 
     # we want two rows
-    _limit = page * NB_VIDS_PER_ROW * 2
-    _offset = page * (_limit - NB_VIDS_PER_ROW)
+    _limit = NB_VIDS_PER_ROW * 2
+    _offset = (page - 1) * _limit
 
     if not start:
         first = db.table.find_one(order_by="created_at")
