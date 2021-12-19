@@ -1,0 +1,45 @@
+<div id="videos-list">
+    <form hx-include="#checked-videos,[name='tags']" hx-target="#videos-list" class="row form align-items-center">
+        <div class="col-auto">
+            <input type="text" name="tags" class="form-control tagin" value="" data-tagin-placeholder="Add a tag... (then press comma)">
+        </div>
+        <div class="col-auto">
+            <button hx-put="{{ url_for('videos_tag') }}" type="button" class="btn btn-sm btn-primary">Add tag(s)</button>
+            <button hx-put="{{ url_for('videos_untag') }}" type="button" class="btn btn-sm btn-danger">Remove tag(s)</button>
+        </div>
+    </form>
+
+    <form id="checked-videos">
+        <table class="table">
+            <thead>
+                <th></th>
+                <th>Thumbnail</th>
+                <th>Id</th>
+                <th>Date</th>
+                <th>Duration</th>
+                <th>Title</th>
+                <th>Tags</th>
+            </thead>
+            <tbody id="tbody">
+                {% for video in videos %}
+                <tr>
+                    <td><input type="checkbox" name="ids" value="{{ video.id }}"></td>
+                    <td data-bs-toggle="modal" data-bs-target="#videoModal" data-bs-title="{{ video.title }}"
+                        data-bs-video-url="{{ url_for('stream_data_file', path=video.path) }}">
+                        <img class="thumb" src="{{ url_for('media.static', filename=video.thumbnail) }}" alt="">
+                    </td>
+                    <td><a href="{{ url_for('video', rel_path=video.path) }}">{{ video.title }}</a></td>
+                    <td>{{ video.created_at }}</td>
+                    <td>{{ video.duration|int }}</td>
+                    <td>{{ video.title }}</td>
+                    <td>
+                        {% for tag in (video.tags or {}) %}
+                        <span class="badge bg-secondary">{{ tag }}</span>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </form>
+</div>

@@ -1,0 +1,55 @@
+{% set title = "Videos list" %}
+
+{% extends "_layout.html" %}
+
+{% block content %}
+
+{{ render_partial("partials/videos_list.html", videos=videos) }}
+
+<!-- Modal -->
+<div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="videoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="videoModalLabel">Modal title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+            <div class="modal-body">
+                <video width="100%" controls src="">
+                </video>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// video preview modal
+var videoModal = document.getElementById('videoModal')
+videoModal.addEventListener('show.bs.modal', function (event) {
+    // Button that triggered the modal
+    var elt = event.relatedTarget
+    // Extract info from data-bs-* attributes
+    var title = elt.getAttribute('data-bs-title')
+    var url = elt.getAttribute('data-bs-video-url')
+    // Update the modal's content.
+    var modalTitle = videoModal.querySelector('.modal-title')
+    var videoElt = videoModal.querySelector('.modal-body video')
+
+    modalTitle.textContent = title
+    videoElt.src = url
+})
+</script>
+{% endblock %}
+
+{% block extrajs %}
+<script src="https://unpkg.com/tagin@2.0.2/dist/tagin.min.js"></script>
+<script>
+    htmx.onLoad(function(content) {
+        new Tagin(document.querySelector('.tagin'))
+    })
+</script>
+{% endblock %}
+
+{% block extracss %}
+<link rel="stylesheet" href="https://unpkg.com/tagin@2.0.2/dist/tagin.min.css">
+{% endblock %}

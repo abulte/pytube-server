@@ -3,12 +3,14 @@ import re
 from datetime import date
 from pathlib import Path
 
+import dataset
 import jinja_partials
 import humanize
 import more_itertools
 
 from flask import Flask, render_template, request, Response, Blueprint
 from flask.cli import load_dotenv
+from slugify import slugify
 from werkzeug.exceptions import NotFound
 
 import db
@@ -78,6 +80,44 @@ def index():
         return jinja_partials.render_partial("partials/videos.html", **kwargs)
 
     return render_template("index.html", **kwargs)
+
+
+@app.route("/videos/list")
+def videos_list():
+    videos = db.table.all(order_by="-created_at")
+    return render_template("list.html", videos=videos)
+
+
+@app.route("/videos/tag", methods=["PUT"])
+def videos_tag():
+    tags = request.form.get("tags", "").split(",")
+    videos_ids = request.form.getlist("ids")
+
+    if not db.table.has_column("tags"):
+        db.table.create_column("tags", dataset.types.Types().json)
+
+    for _id in videos_ids:
+        video = db.table.find_one(id=_id)
+        if not video:
+            continue
+        tags = {slugify(t): 1 for t in tags}
+        video_tags = video["tags"] or {}
+        db.table.update(
+            # merge existing and new tags
+            {"id": video["id"], "tags": {**video_tags, **tags}},
+            ["id"],
+        )
+
+    videos = db.table.all(order_by="-created_at")
+    return jinja_partials.render_partial(
+        "partials/videos_list.html",
+        videos=videos
+    )
+
+
+@app.route("/videos/untag", methods=["PUT"])
+def videos_untag():
+    pass
 
 
 @app.route("/videos/<path:rel_path>")

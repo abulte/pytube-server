@@ -6,3 +6,8 @@
     margin-bottom: 20px;
     margin-top: 20px;
 }
+
+td > img.thumb {
+    max-width: 150px;
+    cursor: pointer;
+}
