@@ -1,6 +1,6 @@
 <div id="videos-list">
     <form hx-include="#checked-videos,[name='tags']" hx-target="#videos-list" class="row form align-items-center">
-        <div class="col-auto">
+        <div class="col-sm-6">
             <input type="text" name="tags" class="form-control tagin" value="" data-tagin-placeholder="Add a tag... (then press comma)">
         </div>
         <div class="col-auto">
@@ -9,7 +9,7 @@
         </div>
     </form>
 
-    <form id="checked-videos">
+    <form id="checked-videos" class="table-responsive">
         <table class="table">
             <thead>
                 <th></th>

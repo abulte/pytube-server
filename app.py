@@ -117,7 +117,27 @@ def videos_tag():
 
 @app.route("/videos/untag", methods=["PUT"])
 def videos_untag():
-    pass
+    tags = request.form.get("tags", "").split(",")
+    videos_ids = request.form.getlist("ids")
+
+    for _id in videos_ids:
+        video = db.table.find_one(id=_id)
+        if not video:
+            continue
+        tags = {slugify(t): 1 for t in tags}
+        for tag in tags:
+            q = f"""
+                UPDATE videos
+                SET tags = json_remove(tags, '$.{tag}')
+                WHERE id = {video['id']}
+                """
+            db.db.query(q)
+
+    videos = db.table.all(order_by="-created_at")
+    return jinja_partials.render_partial(
+        "partials/videos_list.html",
+        videos=videos
+    )
 
 
 @app.route("/videos/<path:rel_path>")
