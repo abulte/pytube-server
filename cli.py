@@ -110,6 +110,14 @@ def do_import(crf="35", date="", force=False):
         }, ["path"])
 
 
+@cli
+def migrate():
+    """Poor man's migration"""
+    if not db.table.has_column("tags"):
+        db.table.create_column("tags", db.db.types.Types().json)
+    print("Migrated.")
+
+
 if __name__ == "__main__":
     print(f"""
  _ __  _  _  _          _

@@ -4,7 +4,6 @@ import re
 from datetime import date, timedelta, datetime
 from pathlib import Path
 
-import dataset
 import jinja_partials
 import humanize
 import more_itertools
@@ -110,9 +109,6 @@ def videos_tag():
     if tags:
         tags = json.loads(tags)
     videos_ids = request.form.getlist("ids")
-
-    if not db.table.has_column("tags"):
-        db.table.create_column("tags", dataset.types.Types().json)
 
     for _id in videos_ids:
         video = db.table.find_one(id=_id)
