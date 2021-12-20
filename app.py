@@ -1,6 +1,7 @@
+import json
 import re
 
-from datetime import date
+from datetime import date, timedelta, datetime
 from pathlib import Path
 
 import dataset
@@ -21,7 +22,7 @@ load_dotenv()
 # 1 Mo
 CHUNK_SIZE = 1000000
 VID_PATH = Path(settings.get("output_path", "./output"))
-NB_VIDS_PER_ROW = 2
+NB_VIDS_PER_ROW = 3
 
 app = Flask(__name__)
 jinja_partials.register_extensions(app)
@@ -44,6 +45,7 @@ def videos_to_rows(videos):
 def index():
     start = request.args.get("start")
     end = request.args.get("end")
+    tags = request.args.get("tags", "").split(",")
     route = request.args.get("route", "")
     page = int(request.args.get("page", 1))
 
@@ -55,17 +57,30 @@ def index():
         first = db.table.find_one(order_by="created_at")
         start = first["created_at"].date().isoformat()
 
-    if not end:
+    # Add 1 day to end date to include it in results
+    if end:
+        end = date.fromisoformat(end) + timedelta(days=1)
+        end = end.isoformat()
+    else:
         end = date.today().isoformat()
 
-    route_query = {"route": {"not": None}} if route else {}
-    videos = db.table.find(**{
-        "created_at": {
-            "gte": start,
-            "lte": end,
-        },
-        **route_query,
-    }, order_by="-created_at", _limit=_limit, _offset=_offset)
+    where = []
+    if start:
+        where.append("created_at >= :start")
+    if end:
+        where.append("created_at <= :end")
+    if route:
+        where.append("route NOT NULL")
+    where += [f"json_extract(tags, '$.{tag}') = 1" for tag in tags if tag]
+    q = f"""
+        SELECT * FROM videos WHERE
+        {" AND ".join(where)}
+        ORDER BY created_at DESC
+        LIMIT {_limit}
+        OFFSET {_offset}
+    """
+
+    videos = db.db.query(q, start=start, end=end)
 
     rows = videos_to_rows(videos)
     kwargs = {
@@ -74,6 +89,7 @@ def index():
         "end": end,
         "route": route,
         "page": page,
+        "tags": db.get_tags(),
     }
 
     if "HX-Request" in request.headers:
@@ -85,12 +101,14 @@ def index():
 @app.route("/videos/list")
 def videos_list():
     videos = db.table.all(order_by="-created_at")
-    return render_template("list.html", videos=videos)
+    return render_template("list.html", videos=videos, tags=db.get_tags())
 
 
 @app.route("/videos/tag", methods=["PUT"])
 def videos_tag():
-    tags = request.form.get("tags", "").split(",")
+    tags = request.form.get("tags")
+    if tags:
+        tags = json.loads(tags)
     videos_ids = request.form.getlist("ids")
 
     if not db.table.has_column("tags"):
@@ -100,7 +118,7 @@ def videos_tag():
         video = db.table.find_one(id=_id)
         if not video:
             continue
-        tags = {slugify(t): 1 for t in tags}
+        tags = {slugify(t["value"]): 1 for t in tags}
         video_tags = video["tags"] or {}
         db.table.update(
             # merge existing and new tags
@@ -117,14 +135,16 @@ def videos_tag():
 
 @app.route("/videos/untag", methods=["PUT"])
 def videos_untag():
-    tags = request.form.get("tags", "").split(",")
+    tags = request.form.get("tags")
+    if tags:
+        tags = json.loads(tags)
     videos_ids = request.form.getlist("ids")
 
     for _id in videos_ids:
         video = db.table.find_one(id=_id)
         if not video:
             continue
-        tags = {slugify(t): 1 for t in tags}
+        tags = {slugify(t["value"]): 1 for t in tags}
         for tag in tags:
             q = f"""
                 UPDATE videos
@@ -206,6 +226,7 @@ def stream_data_file(path):
 def datetimeformat(value):
     if not value:
         return
+    value = datetime.fromisoformat(value)
     date_fmt = "%Y-%m-%d %H:%M:%S"
     return f"{humanize.naturaltime(value)} — {value.strftime(date_fmt)}"
 
@@ -215,3 +236,10 @@ def durationformat(value):
     if not value:
         return
     return humanize.precisedelta(float(value))
+
+
+@app.template_filter()
+def fromjson(value):
+    if not value:
+        return
+    return json.loads(value)

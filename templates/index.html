@@ -11,6 +11,9 @@
         <input name="end" type="date" class="form-control" placeholder="End" aria-label="End" value="{{ end }}">
     </div>
     <div class="col-auto">
+        <input name="tags" value="{{ request.args.tags }}" type="text" class="form-controls tagify" placeholder="Tags">
+    </div>
+    <div class="col-auto">
         <div class="form-check">
             <input name="route" class="form-check-input" type="checkbox" id="route"
                 {% if route %}checked=""{% endif %}>
@@ -28,4 +31,18 @@
     {{ render_partial("partials/videos.html", rows=rows, page=page) }}
 </div>
 
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    window.onload = function() {
+        new Tagify(document.querySelector('.tagify'), {
+            whitelist: {{ tags|tojson }},
+            enforceWhitelist: true,
+            originalInputValueFormat: function(valuesArr){
+                return valuesArr.map(item => item.value).join(',')
+            }
+        })
+    }
+</script>
 {% endblock %}

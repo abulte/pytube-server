@@ -42,14 +42,11 @@ videoModal.addEventListener('show.bs.modal', function (event) {
 {% endblock %}
 
 {% block extrajs %}
-<script src="https://unpkg.com/tagin@2.0.2/dist/tagin.min.js"></script>
 <script>
     htmx.onLoad(function(content) {
-        new Tagin(document.querySelector('.tagin'))
+        new Tagify(document.querySelector('.tagify'), {
+            whitelist: {{ tags|tojson }}
+        })
     })
 </script>
-{% endblock %}
-
-{% block extracss %}
-<link rel="stylesheet" href="https://unpkg.com/tagin@2.0.2/dist/tagin.min.css">
 {% endblock %}
