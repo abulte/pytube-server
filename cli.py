@@ -114,7 +114,7 @@ def do_import(crf="35", date="", force=False):
 def migrate():
     """Poor man's migration"""
     if not db.table.has_column("tags"):
-        db.table.create_column("tags", db.db.types.Types().json)
+        db.table.create_column("tags", db.db.types.json)
     print("Migrated.")
 
 
