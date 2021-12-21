@@ -3,7 +3,7 @@
 {% extends "_layout.html" %}
 
 {% block content %}
-<form class="row form align-items-center" hx-get="/" hx-target="#videos" hx-push-url="true">
+<form class="row form align-items-center" hx-get="{{ url_for('index') }}" hx-target="#videos" hx-push-url="true">
     <div class="col-auto">
         <input name="start" type="date" class="form-control" placeholder="Start" aria-label="Start" value="{{ start }}">
     </div>
