@@ -7,3 +7,9 @@
 ## Run web app to serve converted files
 
 `flask run`
+
+## Fix creation data metadata on GoPro files
+
+E.g., add one year, using [ExifTool](https://exiftool.org):
+
+`exiftool "-CreateDate+=1:0:0 0:0:0" *.MP4`
