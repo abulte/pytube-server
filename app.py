@@ -10,6 +10,7 @@ import more_itertools
 
 from flask import Flask, render_template, request, Response, Blueprint
 from flask.cli import load_dotenv
+from flask_basicauth import BasicAuth
 from slugify import slugify
 from werkzeug.exceptions import NotFound
 
@@ -31,6 +32,14 @@ blueprint = Blueprint(
 )
 app.register_blueprint(blueprint)
 app.logger.debug(f"Input: {VID_PATH}")
+
+if settings.get("basic_auth", "") == "1":
+    app.config.update(**{
+        "BASIC_AUTH_FORCE": True,
+        "BASIC_AUTH_USERNAME": settings.get("basic_auth_username"),
+        "BASIC_AUTH_PASSWORD": settings.get("basic_auth_password"),
+    })
+    BasicAuth(app)
 
 
 def videos_to_rows(videos):

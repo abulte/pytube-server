@@ -10,3 +10,4 @@ more-itertools
 dataset
 python-dotenv
 python-slugify
+Flask-BasicAuth
