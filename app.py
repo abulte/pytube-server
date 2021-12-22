@@ -119,11 +119,11 @@ def videos_tag():
         tags = json.loads(tags)
     videos_ids = request.form.getlist("ids")
 
+    tags = {slugify(t["value"]): 1 for t in tags}
     for _id in videos_ids:
         video = db.table.find_one(id=_id)
         if not video:
             continue
-        tags = {slugify(t["value"]): 1 for t in tags}
         video_tags = video["tags"] or {}
         db.table.update(
             # merge existing and new tags
