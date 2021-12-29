@@ -23,7 +23,7 @@ var map = new maplibregl.Map({
 map.on('load', function () {
     map.addSource('bounds', {
         type: 'geojson',
-        data: '/api/videos/bounds'
+        data: "{{ url_for('videos_bounds') }}"
     })
     map.addLayer({
         id: 'bounds-layer',
@@ -32,7 +32,7 @@ map.on('load', function () {
     })
     map.addSource('centers', {
         type: 'geojson',
-        data: '/api/videos/centers'
+        data: "{{ url_for('videos_bounds') }}"
     })
     map.addLayer({
         id: 'centers',
