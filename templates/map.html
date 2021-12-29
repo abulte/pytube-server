@@ -9,17 +9,15 @@
 
 {% block extrajs %}
 <script src='https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.js'></script>
+
 <script>
 // map
 var map = new maplibregl.Map({
     container: 'map',
     style: 'https://openmaptiles.geo.data.gouv.fr/styles/osm-bright/style.json', // stylesheet location
-    center: [2.041870, 48.928570], // starting position [lng, lat]
-    zoom: 9 // starting zoom
+    bounds: {{ bounds|tojson }},
 })
-// TODO:
-// API with bounds (source1)
-// API with centers and info/tooltip (source2) -> cluster?
+
 map.on('load', function () {
     map.addSource('bounds', {
         type: 'geojson',
@@ -48,7 +46,7 @@ map.on('load', function () {
     })
     map.on('click', 'centers', function (e) {
         var coordinates = e.features[0].geometry.coordinates.slice()
-        var slug = e.features[0].properties["video-slug"]
+        var props = e.features[0].properties
         // Ensure that if the map is zoomed out such that
         // multiple copies of the feature are visible, the
         // popup appears over the copy being pointed to.
@@ -56,10 +54,17 @@ map.on('load', function () {
             coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360
         }
 
+        map.easeTo({
+            center: e.features[0].geometry.coordinates.slice(),
+            zoom: 12
+        })
+
         new maplibregl.Popup()
             .setLngLat(coordinates)
-            .setHTML(
-                '<p>' + slug + '</p>'
+            .setHTML(`
+                <p><a href="${props.link}">${props.slug}</a></p>
+                <img src="${props.thumbnail}">
+                `
             )
             .addTo(map)
     })
@@ -69,4 +74,10 @@ map.on('load', function () {
 
 {% block extracss %}
 <link href='https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css' rel='stylesheet' />
+
+<style>
+.maplibregl-popup-content img {
+    max-width: 200px;
+}
+</style>
 {% endblock %}

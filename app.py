@@ -8,7 +8,7 @@ import jinja_partials
 import humanize
 import more_itertools
 
-from flask import Flask, render_template, request, Response, Blueprint
+from flask import Flask, render_template, request, Response, Blueprint, url_for
 from flask.cli import load_dotenv
 from flask_basicauth import BasicAuth
 from slugify import slugify
@@ -109,7 +109,18 @@ def index():
 @app.route("/videos/map")
 def videos_map():
     videos = db.table.find(route={"not": None})
-    return render_template("map.html", videos=videos)
+    q = """
+        SELECT MIN(minx) as minx, MIN(miny) as miny,
+            MAX(maxx) as maxx, MAX(maxy) as maxy
+        FROM videos WHERE route IS NOT NULL
+    """
+    res = next(db.db.query(q))
+    # add 1% padding to bounds
+    bounds = [
+        [res["minx"] * 0.99, res["miny"] * 0.99],
+        [res["maxx"] * 1.01, res["maxy"] * 1.01]
+    ]
+    return render_template("map.html", videos=videos, bounds=bounds)
 
 
 @app.route("/api/videos/bounds")
@@ -145,8 +156,10 @@ def videos_centers():
         "features": [{
             "type": "Feature",
             "properties": {
-                "video-id": v["id"],
-                "video-slug": v["title"],
+                "id": v["id"],
+                "slug": v["title"],
+                "thumbnail": url_for("media.static", filename=v["thumbnail"]),
+                "link": url_for("video", rel_path=v["path"]),
             },
             "geometry": {
                 "type": "Point",
