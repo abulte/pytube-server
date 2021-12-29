@@ -106,6 +106,59 @@ def index():
     return render_template("index.html", **kwargs)
 
 
+@app.route("/videos/map")
+def videos_map():
+    videos = db.table.find(route={"not": None})
+    return render_template("map.html", videos=videos)
+
+
+@app.route("/api/videos/bounds")
+def videos_bounds():
+    videos = db.table.find(route={"not": None})
+    return {
+        "type": "FeatureCollection",
+        "features": [{
+            "type": "Feature",
+            "properties": {
+                "video-id": v["id"],
+                "video-slug": v["title"],
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                    [v["minx"], v["miny"]],
+                    [v["minx"], v["maxy"]],
+                    [v["maxx"], v["maxy"]],
+                    [v["maxx"], v["miny"]],
+                    [v["minx"], v["miny"]],
+                ]]
+            }
+        } for v in videos]
+    }
+
+
+@app.route("/api/videos/centers")
+def videos_centers():
+    videos = db.table.find(route={"not": None})
+    return {
+        "type": "FeatureCollection",
+        "features": [{
+            "type": "Feature",
+            "properties": {
+                "video-id": v["id"],
+                "video-slug": v["title"],
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    (v["maxx"] + v["minx"]) / 2,
+                    (v["maxy"] + v["miny"]) / 2,
+                ]
+            }
+        } for v in videos]
+    }
+
+
 @app.route("/videos/list")
 def videos_list():
     videos = db.table.all(order_by="-created_at")

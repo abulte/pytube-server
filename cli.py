@@ -1,7 +1,6 @@
 from datetime import datetime
 from pathlib import Path
 
-import contextily
 import ffmpeg
 import ffpb
 import gpmf
@@ -20,7 +19,7 @@ DATE_FMT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 @cli(name="import")
-def do_import(crf="35", date="", force=False):
+def do_import(crf="35", date="", force=False, force_route=False):
     """
     Convert videos in `PYT_VIDEOS_PATH` to compressed videos in
     `PYT_OUTPUT_PATH`. It will also:
@@ -31,6 +30,7 @@ def do_import(crf="35", date="", force=False):
     :crf: compression factor
     :date: process only for this date (tree folder based)
     :force: force processing even if output files already exist
+    :force-route: force route (GPS) processing
     """
     videos = INPUT_PATH.glob("**/*.MP4")
     for v in videos:
@@ -76,16 +76,15 @@ def do_import(crf="35", date="", force=False):
             ]
             ffpb.main(argv=argv)
 
-        # extract gpx image
+        # extract gpx image and bouding box
         route_path = out.with_suffix('.route.png')
-        if not route_path.exists() or force:
+        minx = miny = maxx = maxy = None
+        if not route_path.exists() or force or force_route:
             stream = gpmf.io.extract_gpmf_stream(str(v))
             try:
-                gpmf.gps_plot.plot_gps_trace_from_stream(
-                    stream,
-                    map_provider=contextily.providers.OpenTopoMap,
-                    output_path=str(route_path),
-                )
+                plotter = gpmf.gps_plot.GPSPlotter(stream)
+                plotter.plot(output_path=str(route_path))
+                minx, miny, maxx, maxy = plotter.get_bounding_box()
             except Exception as e:
                 print(f"[ERROR] generating route: {e}")
 
@@ -107,7 +106,16 @@ def do_import(crf="35", date="", force=False):
             "duration": float(fm_meta["duration"]),
             "metadata": fm_meta,
             "title": out.stem,
-        }, ["path"])
+            "minx": minx,
+            "miny": miny,
+            "maxx": maxx,
+            "maxy": maxy,
+        }, ["path"], types={
+            "minx": db.db.types.float,
+            "miny": db.db.types.float,
+            "maxx": db.db.types.float,
+            "maxy": db.db.types.float,
+        })
 
 
 @cli
@@ -115,6 +123,8 @@ def migrate():
     """Poor man's migration"""
     if not db.table.has_column("tags"):
         db.table.create_column("tags", db.db.types.json)
+    if not db.table.has_column("bounding_box"):
+        db.table.create_column("bounding_box", db.db.types.json)
     print("Migrated.")
 
 

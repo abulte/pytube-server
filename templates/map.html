@@ -1,0 +1,73 @@
+{% set title = "Videos map" %}
+{% set container = "fluid" %}
+
+{% extends "_layout.html" %}
+
+{% block content %}
+<div id="map" style="top: 56px; bottom: 0; right: 0; position: absolute; width: 100%;"></div>
+{% endblock %}
+
+{% block extrajs %}
+<script src='https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.js'></script>
+<script>
+// map
+var map = new maplibregl.Map({
+    container: 'map',
+    style: 'https://openmaptiles.geo.data.gouv.fr/styles/osm-bright/style.json', // stylesheet location
+    center: [2.041870, 48.928570], // starting position [lng, lat]
+    zoom: 9 // starting zoom
+})
+// TODO:
+// API with bounds (source1)
+// API with centers and info/tooltip (source2) -> cluster?
+map.on('load', function () {
+    map.addSource('bounds', {
+        type: 'geojson',
+        data: '/api/videos/bounds'
+    })
+    map.addLayer({
+        id: 'bounds-layer',
+        type: 'line',
+        source: 'bounds'
+    })
+    map.addSource('centers', {
+        type: 'geojson',
+        data: '/api/videos/centers'
+    })
+    map.addLayer({
+        id: 'centers',
+        type: 'circle',
+        source: 'centers',
+        // filter: ['!', ['has', 'point_count']],
+        paint: {
+            'circle-color': '#11b4da',
+            'circle-radius': 6,
+            'circle-stroke-width': 1,
+            'circle-stroke-color': '#fff'
+        }
+    })
+    map.on('click', 'centers', function (e) {
+        var coordinates = e.features[0].geometry.coordinates.slice()
+        var slug = e.features[0].properties["video-slug"]
+        console.log(e.features)
+        // Ensure that if the map is zoomed out such that
+        // multiple copies of the feature are visible, the
+        // popup appears over the copy being pointed to.
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360
+        }
+
+        new maplibregl.Popup()
+            .setLngLat(coordinates)
+            .setHTML(
+                '<p>' + slug + '</p>'
+            )
+            .addTo(map)
+    })
+})
+</script>
+{% endblock %}
+
+{% block extracss %}
+<link href='https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css' rel='stylesheet' />
+{% endblock %}
