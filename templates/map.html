@@ -32,7 +32,7 @@ map.on('load', function () {
     })
     map.addSource('centers', {
         type: 'geojson',
-        data: "{{ url_for('videos_bounds') }}"
+        data: "{{ url_for('videos_centers') }}"
     })
     map.addLayer({
         id: 'centers',
