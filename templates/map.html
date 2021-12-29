@@ -4,7 +4,7 @@
 {% extends "_layout.html" %}
 
 {% block content %}
-<div id="map" style="top: 56px; bottom: 0; right: 0; position: absolute; width: 100%;"></div>
+<div id="map"></div>
 {% endblock %}
 
 {% block extrajs %}
@@ -64,10 +64,9 @@ map.on('load', function () {
 
         new maplibregl.Popup()
             .setLngLat(coordinates)
-            .setHTML(`
-                <p><a href="${props.link}">${props.slug}</a></p>
-                <img src="${props.thumbnail}">
-                `
+            .setHTML(
+                `<p><a href="${props.link}">${props.slug}</a></p>
+                <img src="${props.thumbnail}">`
             )
             .addTo(map)
     })
@@ -79,6 +78,13 @@ map.on('load', function () {
 <link href='https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css' rel='stylesheet' />
 
 <style>
+#map {
+    top: 56px;
+    bottom: 0;
+    right: 0;
+    position: absolute;
+    width: 100%;
+}
 .maplibregl-popup-content img {
     max-width: 200px;
 }

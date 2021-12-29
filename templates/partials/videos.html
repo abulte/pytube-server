@@ -4,6 +4,7 @@
     hx-get="{{ url_for('index') }}?page={{ page + 1 }}"
     hx-trigger="revealed"
     hx-swap="afterend"
+    hx-include=".form"
     {% endif %}
 >
     {% for video in videos %}
