@@ -26,7 +26,10 @@ map.on('load', function () {
     map.addLayer({
         id: 'bounds-layer',
         type: 'line',
-        source: 'bounds'
+        source: 'bounds',
+        paint: {
+            'line-dasharray': [1, 1],
+        }
     })
     map.addSource('centers', {
         type: 'geojson',
