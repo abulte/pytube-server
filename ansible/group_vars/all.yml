@@ -1,0 +1,5 @@
+---
+install_dir: /home/alexandre/pytube-server
+git_repo: https://github.com/abulte/pytube-server.git
+user: alexandre
+venv_python: "{{ install_dir }}/pyenv/bin/python"

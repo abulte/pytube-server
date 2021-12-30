@@ -1,0 +1,39 @@
+---
+
+- name: Install service file
+  template:
+    src: gopro.service
+    dest: /etc/systemd/system/gopro.service
+    owner: root
+    group: root
+  notify:
+    - restart service
+
+- name: Clone repo and update
+  git:
+    repo: "{{ git_repo }}"
+    dest: "{{ install_dir }}"
+    clone: yes
+    update: yes
+  become: yes
+  become_user: "{{ user }}"
+  notify:
+    - restart service
+
+- name: Create venv and install requirements
+  pip:
+    requirements: "{{ install_dir }}/requirements.txt"
+    virtualenv: "{{ install_dir }}/pyenv"
+  become: yes
+  become_user: "{{ user }}"
+  notify:
+    - restart service
+
+- name: Run migrate
+  command: "{{ venv_python }} cli.py migrate"
+  become: yes
+  become_user: "{{ user }}"
+  args:
+    chdir: "{{ install_dir }}"
+  notify:
+    - restart service

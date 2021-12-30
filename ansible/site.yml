@@ -1,0 +1,6 @@
+---
+- name: Deploy pytube-server
+  hosts: all
+  remote_user: root
+  roles:
+    - common
