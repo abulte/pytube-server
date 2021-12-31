@@ -5,15 +5,16 @@ from datetime import date, timedelta, datetime
 from pathlib import Path
 
 import jinja_partials
+import jwt
 import humanize
 import more_itertools
 
 from flask import Flask, render_template, request, Response, Blueprint, url_for
 from flask.cli import load_dotenv
-from flask_basicauth import BasicAuth
 from slugify import slugify
 from werkzeug.exceptions import NotFound
 
+import auth
 import db
 import settings
 
@@ -33,13 +34,7 @@ blueprint = Blueprint(
 app.register_blueprint(blueprint)
 app.logger.debug(f"Input: {VID_PATH}")
 
-if settings.get("basic_auth", "") == "1":
-    app.config.update(**{
-        "BASIC_AUTH_FORCE": True,
-        "BASIC_AUTH_USERNAME": settings.get("basic_auth_username"),
-        "BASIC_AUTH_PASSWORD": settings.get("basic_auth_password"),
-    })
-    BasicAuth(app)
+auth.init_app(app)
 
 
 def videos_to_rows(videos):
@@ -236,7 +231,12 @@ def video(rel_path):
     video = db.table.find_one(path=rel_path)
     if not video:
         raise NotFound()
-    return render_template("video.html", video=video)
+    token = jwt.encode({
+        "iat": datetime.utcnow(),
+        "exp": datetime.utcnow() + timedelta(days=30),
+        "aud": rel_path.split("/")[-1].split(".")[0],
+    }, app.config["SECRET_KEY"], algorithm="HS256")
+    return render_template("video.html", video=video, token=token)
 
 
 def get_chunk(path, byte1=None, byte2=None):

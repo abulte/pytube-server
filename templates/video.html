@@ -6,12 +6,35 @@
 
 <h1>{{ video.title }}</h1>
 
-<video width="100%" style="max-width: 1024px;" controls
+<video width="100%" controls
     src="{{ url_for('stream_data_file', path=video.path) }}">
 </video>
 
 {% if video.route %}
-<img width="100%" style="max-width: 1024px;" src="{{ url_for('media.static', filename=video.route) }}" alt="">
+<img width="100%" src="{{ url_for('media.static', filename=video.route) }}" alt="">
 {% endif %}
 
+{% if g.is_admin %}
+<div class="input-group mb-3">
+    <input id="share-link" value="{{ url_for('video', rel_path=video.path, token=token, _external=True) }}" type="text" disabled="true" class="form-control" aria-label="Share link" aria-describedby="button-share">
+    <button onclick="copyText()" class="btn btn-outline-secondary" type="button" id="button-share">Copy share link</button>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extrajs %}
+<script>
+function copyText() {
+    var input = document.getElementById("share-link")
+    navigator.clipboard.writeText(input.value)
+}
+</script>
+{% endblock %}
+
+{% block extracss %}
+<style>
+video, img, .input-group {
+    max-width: 1024px;
+}
+</style>
 {% endblock %}

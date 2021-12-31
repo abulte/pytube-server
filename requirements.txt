@@ -11,3 +11,4 @@ dataset
 python-dotenv
 python-slugify
 Flask-BasicAuth
+pyjwt
