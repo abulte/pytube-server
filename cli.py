@@ -81,8 +81,8 @@ def do_import(crf="35", date="", force=False, force_route=False):
         route_path = out.with_suffix('.route.png')
         minx = miny = maxx = maxy = None
         if not route_path.exists() or force or force_route:
-            stream = gpmf.io.extract_gpmf_stream(str(v))
             try:
+                stream = gpmf.io.extract_gpmf_stream(str(v))
                 plotter = gpmf.gps_plot.GPSPlotter(stream)
                 plotter.plot(output_path=str(route_path))
                 minx, miny, maxx, maxy = plotter.get_bounding_box()

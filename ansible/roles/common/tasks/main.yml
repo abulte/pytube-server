@@ -37,3 +37,13 @@
     chdir: "{{ install_dir }}"
   notify:
     - restart service
+
+- name: Run import
+  command: "{{ venv_python }} cli.py import"
+  become: yes
+  become_user: "{{ user }}"
+  args:
+    chdir: "{{ install_dir }}"
+  notify:
+    - restart service
+  when: import is defined and import
