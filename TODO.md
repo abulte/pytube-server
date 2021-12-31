@@ -1,6 +1,9 @@
 # TODO
 
-- [ ] store bounding box for videos with gps data
+- [ ] refactor app.py
+- [ ] add metadata to video detail page
+- [ ] handle "montages"
+- [x] store bounding box for videos with gps data
 - [x] fix metadata on 2016-01-01 ride (ffmpeg cli?)
 - [x] gunicorn service (supervisor)
 - [x] infinite scroll w/ htmx and/or filters

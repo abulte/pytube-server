@@ -32,7 +32,8 @@ def do_import(crf="35", date="", force=False, force_route=False):
     :force: force processing even if output files already exist
     :force-route: force route (GPS) processing
     """
-    videos = INPUT_PATH.glob("**/*.MP4")
+    videos = list(INPUT_PATH.glob("**/*.MP4"))
+    videos += list(INPUT_PATH.glob("**/*.mp4"))
     for v in videos:
         rel = v.relative_to(INPUT_PATH)
         # get rid of the useless GoPro stuff and keep date and file
