@@ -1,3 +1,5 @@
+import re
+
 from datetime import datetime
 from pathlib import Path
 
@@ -92,10 +94,18 @@ def do_import(crf="35", date="", force=False, force_route=False):
         # register to DB
         metadata = ffmpeg.probe(str(v))
         fm_meta = metadata.get("format")
-        if not fm_meta or not fm_meta.get("tags"):
-            print(f"[ERROR] wrong metadata: {metadata}")
-            continue
-        creation_date = fm_meta["tags"]["creation_time"]
+        if not fm_meta or not fm_meta.get("tags", {}).get("creation_time"):
+            # try to find 2021-12-31 style in filename
+            q = r"([0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])"
+            match = re.search(q, str(v))
+            if match:
+                creation_date = datetime.fromisoformat(match.group())
+            else:
+                print(f"[ERROR] wrong metadata: {metadata}")
+                continue
+        else:
+            creation_date = fm_meta["tags"]["creation_time"]
+            creation_date = datetime.strptime(creation_date, DATE_FMT)
         route = str(route_path.relative_to(OUTPUT_PATH)) \
             if route_path.exists() else None
         db.table.upsert({
@@ -103,7 +113,7 @@ def do_import(crf="35", date="", force=False, force_route=False):
             "original_path": str(v),
             "thumbnail": str(tb_path.relative_to(OUTPUT_PATH)),
             "route": route,
-            "created_at": datetime.strptime(creation_date, DATE_FMT),
+            "created_at": creation_date,
             "duration": float(fm_meta["duration"]),
             "metadata": fm_meta,
             "title": out.stem,

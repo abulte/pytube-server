@@ -26,8 +26,6 @@ def init_app(app):
         """
         endpoint, args = request.endpoint, request.view_args
 
-        print(endpoint, args)
-
         if endpoint in SHARABLE_ENDPOINTS:
             if request.args.get("token") and endpoint == "video":
                 token = request.args["token"]
