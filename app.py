@@ -6,16 +6,17 @@ from pathlib import Path
 
 import jinja_partials
 import jwt
-import humanize
 import more_itertools
 
-from flask import Flask, render_template, request, Response, Blueprint, url_for
+from flask import Flask, render_template, request, Response, Blueprint
 from slugify import slugify
 from werkzeug.exceptions import NotFound
 
 import auth
 import db
 import settings
+
+from api import blueprint as api_bp
 
 
 # 1 Mo
@@ -25,14 +26,18 @@ NB_VIDS_PER_ROW = 3
 
 app = Flask(__name__)
 jinja_partials.register_extensions(app)
-blueprint = Blueprint(
+media_bp = Blueprint(
     "media", __name__,
     static_url_path="/static/media", static_folder=VID_PATH,
 )
-app.register_blueprint(blueprint)
-app.logger.debug(f"Input: {VID_PATH}")
+app.register_blueprint(media_bp)
+app.register_blueprint(api_bp)
+
+app.logger.debug(f"Input path: {VID_PATH.resolve()}")
 
 auth.init_app(app)
+
+import filters  # noqa
 
 
 def videos_to_rows(videos):
@@ -114,55 +119,6 @@ def videos_map():
         [res["maxx"] * 1.01, res["maxy"] * 1.01]
     ]
     return render_template("map.html", videos=videos, bounds=bounds)
-
-
-@app.route("/api/videos/bounds")
-def videos_bounds():
-    videos = db.table.find(route={"not": None})
-    return {
-        "type": "FeatureCollection",
-        "features": [{
-            "type": "Feature",
-            "properties": {
-                "video-id": v["id"],
-                "video-slug": v["title"],
-            },
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [[
-                    [v["minx"], v["miny"]],
-                    [v["minx"], v["maxy"]],
-                    [v["maxx"], v["maxy"]],
-                    [v["maxx"], v["miny"]],
-                    [v["minx"], v["miny"]],
-                ]]
-            }
-        } for v in videos]
-    }
-
-
-@app.route("/api/videos/centers")
-def videos_centers():
-    videos = db.table.find(route={"not": None})
-    return {
-        "type": "FeatureCollection",
-        "features": [{
-            "type": "Feature",
-            "properties": {
-                "id": v["id"],
-                "slug": v["title"],
-                "thumbnail": url_for("media.static", filename=v["thumbnail"]),
-                "link": url_for("video", rel_path=v["path"]),
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    (v["maxx"] + v["minx"]) / 2,
-                    (v["maxy"] + v["miny"]) / 2,
-                ]
-            }
-        } for v in videos]
-    }
 
 
 @app.route("/videos/list")
@@ -289,26 +245,3 @@ def stream_data_file(path):
             )
         }
     )
-
-
-@app.template_filter()
-def datetimeformat(value):
-    if not value:
-        return
-    value = datetime.fromisoformat(value)
-    date_fmt = "%Y-%m-%d %H:%M:%S"
-    return f"{humanize.naturaltime(value)} — {value.strftime(date_fmt)}"
-
-
-@app.template_filter()
-def durationformat(value):
-    if not value:
-        return
-    return humanize.precisedelta(float(value))
-
-
-@app.template_filter()
-def fromjson(value):
-    if not value:
-        return
-    return json.loads(value)
