@@ -7,13 +7,11 @@ import ffmpeg
 import ffpb
 import gpmf
 
-from dotenv import load_dotenv
 from minicli import cli, run
 
 import settings
 import db
 
-load_dotenv()
 
 INPUT_PATH = Path(settings.get("VIDEOS_PATH"))
 OUTPUT_PATH = Path(settings.get("OUTPUT_PATH", "./output"))
