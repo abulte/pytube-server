@@ -15,12 +15,11 @@ from werkzeug.exceptions import NotFound
 import auth
 import db
 import settings
+import utils
 
 from api import blueprint as api_bp
 
 
-# 1 Mo
-CHUNK_SIZE = 1000000
 VID_PATH = Path(settings.get("output_path", "./output"))
 NB_VIDS_PER_ROW = 3
 
@@ -56,12 +55,11 @@ def index():
     page = int(request.args.get("page", 1))
 
     # we want two rows
-    _limit = NB_VIDS_PER_ROW * 2
-    _offset = (page - 1) * _limit
+    limit = NB_VIDS_PER_ROW * 2
+    offset = (page - 1) * limit
 
     if not start:
-        first = db.table.find_one(order_by="created_at")
-        start = first["created_at"].date().isoformat()
+        start = db.get_oldest_video()["created_at"].date().isoformat()
 
     # Add 1 day to end date to include it in results
     if end:
@@ -70,23 +68,14 @@ def index():
     else:
         end = date.today().isoformat()
 
-    where = []
-    if start:
-        where.append("created_at >= :start")
-    if end:
-        where.append("created_at <= :end")
-    if route:
-        where.append("route NOT NULL")
-    where += [f"json_extract(tags, '$.{tag}') = 1" for tag in tags if tag]
-    q = f"""
-        SELECT * FROM videos WHERE
-        {" AND ".join(where)}
-        ORDER BY created_at DESC
-        LIMIT {_limit}
-        OFFSET {_offset}
-    """
-
-    videos = db.db.query(q, start=start, end=end)
+    videos = db.get_videos(
+        start=start,
+        end=end,
+        tags=tags,
+        has_route=route,
+        limit=limit,
+        offset=offset,
+    )
 
     rows = videos_to_rows(videos)
     kwargs = {
@@ -107,16 +96,11 @@ def index():
 @app.route("/videos/map")
 def videos_map():
     videos = db.table.find(route={"not": None})
-    q = """
-        SELECT MIN(minx) as minx, MIN(miny) as miny,
-            MAX(maxx) as maxx, MAX(maxy) as maxy
-        FROM videos WHERE route IS NOT NULL
-    """
-    res = next(db.db.query(q))
+    bounds = db.get_videos_bounds()
     # add 1% padding to bounds
     bounds = [
-        [res["minx"] * 0.99, res["miny"] * 0.99],
-        [res["maxx"] * 1.01, res["maxy"] * 1.01]
+        [bounds["minx"] * 0.99, bounds["miny"] * 0.99],
+        [bounds["maxx"] * 1.01, bounds["maxy"] * 1.01]
     ]
     return render_template("map.html", videos=videos, bounds=bounds)
 
@@ -135,16 +119,7 @@ def videos_tag():
     videos_ids = request.form.getlist("ids")
 
     tags = {slugify(t["value"]): 1 for t in tags}
-    for _id in videos_ids:
-        video = db.table.find_one(id=_id)
-        if not video:
-            continue
-        video_tags = video["tags"] or {}
-        db.table.update(
-            # merge existing and new tags
-            {"id": video["id"], "tags": {**video_tags, **tags}},
-            ["id"],
-        )
+    db.add_tags(videos_ids, tags)
 
     videos = db.table.all(order_by="-created_at")
     return jinja_partials.render_partial(
@@ -160,18 +135,8 @@ def videos_untag():
         tags = json.loads(tags)
     videos_ids = request.form.getlist("ids")
 
-    for _id in videos_ids:
-        video = db.table.find_one(id=_id)
-        if not video:
-            continue
-        tags = {slugify(t["value"]): 1 for t in tags}
-        for tag in tags:
-            q = f"""
-                UPDATE videos
-                SET tags = json_remove(tags, '$.{tag}')
-                WHERE id = {video['id']}
-                """
-            db.db.query(q)
+    tags = {slugify(t["value"]): 1 for t in tags}
+    db.remove_tags(videos_ids, tags)
 
     videos = db.table.all(order_by="-created_at")
     return jinja_partials.render_partial(
@@ -193,33 +158,6 @@ def video(rel_path):
     return render_template("video.html", video=video, token=token)
 
 
-def get_chunk(path, byte1=None, byte2=None):
-    full_path = VID_PATH / Path(path)
-    # avoid path traversal attempts
-    full_path.resolve().relative_to(VID_PATH.resolve())
-    if not full_path.exists():
-        raise NotFound()
-
-    file_size = full_path.stat().st_size
-    start = 0
-
-    if byte1 < file_size:
-        start = byte1
-    if byte2:
-        length = byte2 + 1 - byte1
-    else:
-        # chunk size here
-        length = start + CHUNK_SIZE
-        if start + length > file_size:
-            length = file_size - start
-
-    with open(full_path, "rb") as f:
-        f.seek(start)
-        chunk = f.read(length)
-
-    return chunk, start, length, file_size
-
-
 @app.route("/videos/<path:path>/download")
 def stream_data_file(path):
     range_header = request.headers.get("Range", None)
@@ -232,7 +170,13 @@ def stream_data_file(path):
         if groups[1]:
             byte_e = int(groups[1])
 
-    chunk, start, length, file_size = get_chunk(path, byte_s, byte_e)
+    full_path = VID_PATH / Path(path)
+    # avoid path traversal attempts
+    full_path.resolve().relative_to(VID_PATH.resolve())
+    if not full_path.exists():
+        raise NotFound()
+
+    chunk, start, length, file_size = utils.get_chunk(full_path, byte_s, byte_e)
 
     return Response(
         chunk, 206,
