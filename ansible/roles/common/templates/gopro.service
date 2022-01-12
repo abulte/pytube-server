@@ -1,10 +1,10 @@
 [Unit]
-Description=gopro uWSGI app
+Description=herotube uWSGI app
 After=syslog.target
 
 [Service]
 ExecStart={{ install_dir }}/pyenv/bin/uwsgi \
-        --socket :8000 --manage-script-name --mount /gopro=app:app \
+	--socket :8000 --manage-script-name --mount /herotube=app:app \
 	--virtualenv {{ install_dir }}/pyenv/ \
 	--chdir {{ install_dir }}
 User={{ user }}
