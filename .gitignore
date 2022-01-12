@@ -2,3 +2,4 @@ output/
 !output/.gitkeep
 data/
 videos.db*
+*.egg-info

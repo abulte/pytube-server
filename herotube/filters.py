@@ -4,7 +4,7 @@ from datetime import datetime
 
 import humanize
 
-from app import app
+from herotube.app import app
 
 
 @app.template_filter()

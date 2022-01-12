@@ -1,6 +1,6 @@
 from flask import Blueprint, url_for
 
-import db
+from herotube import db
 
 blueprint = Blueprint("api", __name__, url_prefix="/api")
 

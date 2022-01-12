@@ -12,15 +12,15 @@ from flask import Flask, render_template, request, Response, Blueprint
 from slugify import slugify
 from werkzeug.exceptions import NotFound
 
-import auth
-import db
-import settings
-import utils
+from herotube import auth
+from herotube import db
+from herotube import settings
+from herotube import utils
 
-from api import blueprint as api_bp
+from herotube.api import blueprint as api_bp
 
 
-VID_PATH = Path(settings.get("output_path", "./output"))
+VID_PATH = Path(settings.get("output_path", "./output")).resolve()
 NB_VIDS_PER_ROW = 3
 
 app = Flask(__name__)
@@ -32,11 +32,11 @@ media_bp = Blueprint(
 app.register_blueprint(media_bp)
 app.register_blueprint(api_bp)
 
-app.logger.debug(f"Input path: {VID_PATH.resolve()}")
+app.logger.debug(f"Input path: {VID_PATH}")
 
 auth.init_app(app)
 
-import filters  # noqa
+from herotube import filters  # noqa
 
 
 def videos_to_rows(videos):

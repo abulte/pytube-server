@@ -9,8 +9,8 @@ import gpmf
 
 from minicli import cli, run
 
-import settings
-import db
+from herotube import settings
+from herotube import db
 
 
 INPUT_PATH = Path(settings.get("VIDEOS_PATH"))

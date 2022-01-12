@@ -4,7 +4,7 @@ import jwt
 
 from flask_basicauth import BasicAuth
 
-import settings
+from herotube import settings
 
 SHARABLE_ENDPOINTS = ["video", "stream_data_file", "static", "media.static"]
 

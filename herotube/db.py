@@ -1,6 +1,6 @@
 import dataset
 
-import settings
+from herotube import settings
 
 default = "sqlite:///videos.db"
 db = dataset.connect(settings.get("db_path") or default)
