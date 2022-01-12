@@ -12,10 +12,7 @@ from flask import Flask, render_template, request, Response, Blueprint
 from slugify import slugify
 from werkzeug.exceptions import NotFound
 
-from herotube import auth
-from herotube import db
-from herotube import settings
-from herotube import utils
+from herotube import auth, db, settings, utils
 
 from herotube.api import blueprint as api_bp
 
