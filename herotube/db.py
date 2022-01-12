@@ -2,8 +2,8 @@ import dataset
 
 from herotube import settings
 
-default = "sqlite:///videos.db"
-db = dataset.connect(settings.get("db_path") or default)
+DEFAULT_DSN = "sqlite:///videos.db"
+db = dataset.connect(settings.get("database_url") or DEFAULT_DSN)
 table = db["videos"]
 
 
@@ -68,5 +68,5 @@ def remove_tags(videos_ids, tags):
                 UPDATE videos
                 SET tags = json_remove(tags, '$.{tag}')
                 WHERE id = {video['id']}
-                """
+            """
             db.query(q)

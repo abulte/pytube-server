@@ -1,4 +1,4 @@
-# pytube-server
+# herotube
 
 ## Convert (GoPro) videos to web-playable format
 
