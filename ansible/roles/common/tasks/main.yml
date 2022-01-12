@@ -2,8 +2,8 @@
 
 - name: Install service file
   template:
-    src: gopro.service
-    dest: /etc/systemd/system/gopro.service
+    src: herotube.service
+    dest: /etc/systemd/system/herotube.service
     owner: root
     group: root
   notify:
@@ -30,7 +30,7 @@
     - restart service
 
 - name: Run migrate
-  command: "{{ venv_python }} cli.py migrate"
+  command: "{{ venv_python }} herotube migrate"
   become: yes
   become_user: "{{ user }}"
   args:
@@ -39,7 +39,7 @@
     - restart service
 
 - name: Run import
-  command: "{{ venv_python }} cli.py import"
+  command: "{{ venv_python }} herotube import"
   become: yes
   become_user: "{{ user }}"
   args:

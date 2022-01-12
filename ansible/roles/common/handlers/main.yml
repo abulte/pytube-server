@@ -4,5 +4,5 @@
   systemd:
     state: restarted
     daemon_reload: yes
-    name: gopro
+    name: herotube
     enabled: yes
