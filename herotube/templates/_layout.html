@@ -13,7 +13,11 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('index') }}">Videos</a>
+            <a class="navbar-brand" href="{{ url_for('index') }}">hero<sup>tube</sup></a>
+            <nav class="nav">
+                <a class="nav-link" href="{{ url_for('videos_list') }}">Admin list</a>
+                <a class="nav-link" href="{{ url_for('videos_map') }}">Map</a>
+            </nav>
         </div>
     </nav>
     <div class="container{% if container %}-{{ container }}{% endif %}">
