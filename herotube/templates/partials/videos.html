@@ -1,6 +1,6 @@
 {% for videos in rows %}
 <div class="row videos"
-    {% if loop.last %}
+    {% if loop.last and page %}
     hx-get="{{ url_for('index') }}?page={{ page + 1 }}"
     hx-trigger="revealed"
     hx-swap="afterend"

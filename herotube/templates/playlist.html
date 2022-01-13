@@ -1,0 +1,13 @@
+{% set title = playlist %}
+
+{% extends "_layout.html" %}
+
+{% block content %}
+
+<h1>{{ playlist }}</h1>
+
+<div id="videos">
+    {{ render_partial("partials/videos.html", rows=rows) }}
+</div>
+
+{% endblock %}

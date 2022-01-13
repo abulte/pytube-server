@@ -44,8 +44,11 @@ videoModal.addEventListener('show.bs.modal', function (event) {
 {% block extrajs %}
 <script>
     htmx.onLoad(function(content) {
-        new Tagify(document.querySelector('.tagify'), {
+        new Tagify(document.querySelector('.tagify[name="tags"]'), {
             whitelist: {{ tags|tojson }}
+        })
+        new Tagify(document.querySelector('.tagify[name="playlists"]'), {
+            whitelist: {{ playlists|tojson }}
         })
     })
 </script>

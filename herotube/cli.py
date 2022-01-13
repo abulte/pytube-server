@@ -134,6 +134,8 @@ def migrate():
         db.table.create_column("tags", db.db.types.json)
     if not db.table.has_column("bounding_box"):
         db.table.create_column("bounding_box", db.db.types.json)
+    if not db.table.has_column("playlists"):
+        db.table.create_column("playlists", db.db.types.json)
     print("Migrated.")
 
 

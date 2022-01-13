@@ -1,0 +1,15 @@
+{% set title = "Playlists" %}
+
+{% extends "_layout.html" %}
+
+{% block content %}
+
+<h1>Playlists</h1>
+
+<ul>
+    {% for playlist in playlists %}
+    <li><a href="{{ url_for('videos_playlist', playlist=playlist) }}">{{ playlist }}</a></li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

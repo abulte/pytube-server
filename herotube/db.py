@@ -7,16 +7,11 @@ db = dataset.connect(settings.get("database_url") or DEFAULT_DSN)
 table = db["videos"]
 
 
-def get_tags():
-    tags = db.query("SELECT DISTINCT(json_each.key) FROM videos, json_each(tags)")
-    return [t["key"] for t in tags]
-
-
 def get_oldest_video():
     return table.find_one(order_by="created_at")
 
 
-def get_videos(limit, offset, start=None, end=None, tags=[], has_route=False):
+def get_videos(limit=None, offset=None, start=None, end=None, keys={}, has_route=False):
     where = []
     if start:
         where.append("created_at >= :start")
@@ -24,14 +19,22 @@ def get_videos(limit, offset, start=None, end=None, tags=[], has_route=False):
         where.append("created_at <= :end")
     if has_route:
         where.append("route NOT NULL")
-    where += [f"json_extract(tags, '$.{tag}') = 1" for tag in tags if tag]
+    # keys = {
+    #   "tags": ["a", "b"],
+    #   "playlists": ["a", "b"],
+    # }
+    for key, values in keys.items():
+        where += [f"json_extract({key}, '$.{v}') = 1" for v in values]
     q = f"""
         SELECT * FROM videos WHERE
         {" AND ".join(where)}
         ORDER BY created_at DESC
-        LIMIT {limit}
-        OFFSET {offset}
     """
+
+    if limit is not None:
+        q += f" LIMIT {limit}"
+    if offset is not None:
+        q += f" OFFSET {offset}"
 
     return db.query(q, start=start, end=end)
 
@@ -45,28 +48,33 @@ def get_videos_bounds():
     return next(db.query(q))
 
 
-def add_tags(videos_ids, tags):
+def get_distinct_keys(column):
+    elts = db.query(f"SELECT DISTINCT(json_each.key) FROM videos, json_each({column})")
+    return [t["key"] for t in elts]
+
+
+def add_keys(column, videos_ids, keys):
     for _id in videos_ids:
         video = table.find_one(id=_id)
         if not video:
             continue
-        video_tags = video["tags"] or {}
+        video_elts = video[column] or {}
         table.update(
-            # merge existing and new tags
-            {"id": video["id"], "tags": {**video_tags, **tags}},
+            # merge existing and new elements
+            {"id": video["id"], column: {**video_elts, **keys}},
             ["id"],
         )
 
 
-def remove_tags(videos_ids, tags):
+def remove_keys(column, videos_ids, keys):
     for _id in videos_ids:
         video = table.find_one(id=_id)
         if not video:
             continue
-        for tag in tags:
+        for key in keys:
             q = f"""
                 UPDATE videos
-                SET tags = json_remove(tags, '$.{tag}')
-                WHERE id = {video['id']}
+                SET {column} = json_remove({column}, '$.{key}')
+                WHERE id = ?
             """
-            db.query(q)
+            db.query(q, video["id"])

@@ -68,7 +68,7 @@ def index():
     videos = db.get_videos(
         start=start,
         end=end,
-        tags=tags,
+        keys={"tags": tags},
         has_route=route,
         limit=limit,
         offset=offset,
@@ -100,46 +100,6 @@ def videos_map():
         [bounds["maxx"] * 1.01, bounds["maxy"] * 1.01]
     ]
     return render_template("map.html", videos=videos, bounds=bounds)
-
-
-@app.route("/videos/list")
-def videos_list():
-    videos = db.table.all(order_by="-created_at")
-    return render_template("list.html", videos=videos, tags=db.get_tags())
-
-
-@app.route("/videos/tag", methods=["PUT"])
-def videos_tag():
-    tags = request.form.get("tags")
-    if tags:
-        tags = json.loads(tags)
-    videos_ids = request.form.getlist("ids")
-
-    tags = {slugify(t["value"]): 1 for t in tags}
-    db.add_tags(videos_ids, tags)
-
-    videos = db.table.all(order_by="-created_at")
-    return jinja_partials.render_partial(
-        "partials/videos_list.html",
-        videos=videos
-    )
-
-
-@app.route("/videos/untag", methods=["PUT"])
-def videos_untag():
-    tags = request.form.get("tags")
-    if tags:
-        tags = json.loads(tags)
-    videos_ids = request.form.getlist("ids")
-
-    tags = {slugify(t["value"]): 1 for t in tags}
-    db.remove_tags(videos_ids, tags)
-
-    videos = db.table.all(order_by="-created_at")
-    return jinja_partials.render_partial(
-        "partials/videos_list.html",
-        videos=videos
-    )
 
 
 @app.route("/videos/<path:rel_path>")
@@ -186,3 +146,68 @@ def stream_data_file(path):
             )
         }
     )
+
+
+@app.route("/videos/list")
+def videos_list():
+    videos = db.table.all(order_by="-created_at")
+    return render_template("list.html", videos=videos,
+                           tags=db.get_distinct_keys("tags"),
+                           playlists=db.get_distinct_keys("playlists"))
+
+
+@app.route("/videos/tags", methods=["PUT", "DELETE"])
+def videos_tags():
+    tags = request.form.get("tags")
+    if tags:
+        tags = json.loads(tags)
+    videos_ids = request.form.getlist("ids")
+    tags = {slugify(t["value"]): 1 for t in tags}
+
+    if request.method == "PUT":
+        db.add_keys("tags", videos_ids, tags)
+    elif request.method == "DELETE":
+        db.remove_keys("tags", videos_ids, tags)
+
+    videos = db.table.all(order_by="-created_at")
+    return jinja_partials.render_partial(
+        "partials/videos_list.html",
+        videos=videos
+    )
+
+
+@app.route("/videos/playlists", methods=["PUT", "DELETE"])
+def videos_playlists():
+    playlists = request.form.get("playlists")
+    if playlists:
+        playlists = json.loads(playlists)
+    videos_ids = request.form.getlist("ids")
+    playlists = {p["value"]: 1 for p in playlists}
+
+    if request.method == "PUT":
+        db.add_keys("playlists", videos_ids, playlists)
+    elif request.method == "DELETE":
+        db.remove_keys("playlists", videos_ids, playlists)
+
+    videos = db.table.all(order_by="-created_at")
+    return jinja_partials.render_partial(
+        "partials/videos_list.html",
+        videos=videos
+    )
+
+
+@app.route("/videos/playlists", methods=["GET"])
+def list_videos_playlists():
+    playlists = db.get_distinct_keys("playlists")
+    return render_template("playlists.html", playlists=playlists)
+
+
+@app.route("/videos/playlists/<playlist>", methods=["GET"])
+def videos_playlist(playlist):
+    if playlist not in db.get_distinct_keys("playlists"):
+        raise NotFound()
+
+    videos = db.get_videos(keys={"playlists": [playlist]})
+
+    rows = videos_to_rows(videos)
+    return render_template("playlist.html", rows=rows, playlist=playlist)

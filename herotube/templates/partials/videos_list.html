@@ -4,8 +4,17 @@
             <input type="text" name="tags" class="form-control tagify" value="" placeholder="Tags...">
         </div>
         <div class="col-auto">
-            <button hx-put="{{ url_for('videos_tag') }}" type="button" class="btn btn-primary">Add tag(s)</button>
-            <button hx-put="{{ url_for('videos_untag') }}" type="button" class="btn btn-danger">Remove tag(s)</button>
+            <button hx-put="{{ url_for('videos_tags') }}" type="button" class="btn btn-primary">Add tag(s)</button>
+            <button hx-delete="{{ url_for('videos_tags') }}" type="button" class="btn btn-danger">Remove tag(s)</button>
+        </div>
+    </form>
+    <form hx-include="#checked-videos,[name='playlists']" hx-target="#videos-list" class="row form align-items-center">
+        <div class="col-sm-6">
+            <input type="text" name="playlists" class="form-control tagify" value="" placeholder="Playlists...">
+        </div>
+        <div class="col-auto">
+            <button hx-put="{{ url_for('videos_playlists') }}" type="button" class="btn btn-primary">Add to playlist</button>
+            <button hx-delete="{{ url_for('videos_playlists') }}" type="button" class="btn btn-danger">Remove from playlist(s)</button>
         </div>
     </form>
 
@@ -17,8 +26,9 @@
                 <th>Id</th>
                 <th>Date</th>
                 <th>Duration</th>
-                <th>Title</th>
+                <!-- <th>Title</th> -->
                 <th>Tags</th>
+                <th>Playlists</th>
             </thead>
             <tbody id="tbody">
                 {% for video in videos %}
@@ -31,10 +41,17 @@
                     <td><a href="{{ url_for('video', rel_path=video.path) }}">{{ video.title }}</a></td>
                     <td>{{ video.created_at }}</td>
                     <td>{{ video.duration|int }}</td>
-                    <td>{{ video.title }}</td>
+                    <!-- <td>{{ video.title }}</td> -->
                     <td>
                         {% for tag in (video.tags or {}) %}
                         <span class="badge bg-secondary">{{ tag }}</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for playlist in (video.playlists or {}) %}
+                        <a href="{{ url_for('videos_playlist', playlist=playlist) }}">
+                            <span class="badge bg-secondary">{{ playlist }}</span>
+                        </a>
                         {% endfor %}
                     </td>
                 </tr>
