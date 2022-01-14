@@ -31,7 +31,7 @@
     - restart service
 
 - name: Run migrate
-  command: "{{ venv_python }} herotube migrate"
+  command: "{{ herotube_cmd }} migrate"
   become: yes
   become_user: "{{ user }}"
   args:
@@ -40,7 +40,7 @@
     - restart service
 
 - name: Run import
-  command: "{{ venv_python }} herotube import"
+  command: "{{ herotube_cmd }} import"
   become: yes
   become_user: "{{ user }}"
   args:
