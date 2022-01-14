@@ -22,8 +22,9 @@
 
 - name: Create venv and install requirements
   pip:
-    requirements: "{{ install_dir }}/requirements.txt"
+    name: "."
     virtualenv: "{{ install_dir }}/pyenv"
+    chdir: "{{ install_dir }}"
   become: yes
   become_user: "{{ user }}"
   notify:
