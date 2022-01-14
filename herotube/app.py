@@ -8,7 +8,7 @@ import jinja_partials
 import jwt
 import more_itertools
 
-from flask import Flask, render_template, request, Response, Blueprint
+from flask import Flask, render_template, request, Response, Blueprint, g
 from slugify import slugify
 from werkzeug.exceptions import NotFound
 
@@ -110,8 +110,8 @@ def video(rel_path):
     token = jwt.encode({
         "iat": datetime.utcnow(),
         "exp": datetime.utcnow() + timedelta(days=30),
-        "aud": rel_path.split("/")[-1].split(".")[0],
-    }, app.config["SECRET_KEY"], algorithm="HS256")
+        "subject": f"video:{video['title']}",
+    }, app.config["SECRET_KEY"], algorithm="HS256") if g.get("is_admin") else None
     return render_template("video.html", video=video, token=token)
 
 
@@ -199,7 +199,7 @@ def videos_playlists():
 @app.route("/videos/playlists", methods=["GET"])
 def list_videos_playlists():
     playlists = db.get_distinct_keys("playlists")
-    return render_template("playlists.html", playlists=playlists)
+    return render_template("playlists.html", playlists=playlists, tolen=token)
 
 
 @app.route("/videos/playlists/<playlist>", methods=["GET"])
@@ -207,7 +207,13 @@ def videos_playlist(playlist):
     if playlist not in db.get_distinct_keys("playlists"):
         raise NotFound()
 
+    token = jwt.encode({
+        "iat": datetime.utcnow(),
+        "exp": datetime.utcnow() + timedelta(days=30),
+        "subject": f"playlist:{playlist}",
+    }, app.config["SECRET_KEY"], algorithm="HS256")
+
     videos = db.get_videos(keys={"playlists": [playlist]})
 
     rows = videos_to_rows(videos)
-    return render_template("playlist.html", rows=rows, playlist=playlist)
+    return render_template("playlist.html", rows=rows, playlist=playlist, token=token)

@@ -14,11 +14,13 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ url_for('index') }}">hero<sup>tube</sup></a>
+            {% if g.is_admin %}
             <nav class="nav">
                 <a class="nav-link" href="{{ url_for('videos_list') }}">Admin list</a>
                 <a class="nav-link" href="{{ url_for('videos_map') }}">Map</a>
                 <a class="nav-link" href="{{ url_for('list_videos_playlists') }}">Playlists</a>
             </nav>
+            {% endif %}
         </div>
     </nav>
     <div class="container{% if container %}-{{ container }}{% endif %}">
@@ -28,6 +30,12 @@
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@1.6.1/dist/htmx.min.js" integrity="sha256-VGSL/G2pXcsj6FEMi6Fap8tvqdek3F3br16PtWJogDY=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/@yaireo/tagify@4.9.2"></script>
     <script src="https://unpkg.com/@yaireo/tagify@4.9.2/dist/tagify.polyfills.min.js"></script>
+    <script>
+        function copyText() {
+            var input = document.getElementById("clipboard")
+            navigator.clipboard.writeText(input.value)
+        }
+    </script>
     {% block extrajs %}{% endblock %}
 </body>
 </html>

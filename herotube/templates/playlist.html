@@ -6,6 +6,13 @@
 
 <h1>{{ playlist }}</h1>
 
+{% if g.is_admin %}
+<div class="input-group mb-2">
+    <input id="clipboard" value="{{ url_for('videos_playlist', token=token, playlist=playlist, _external=True) }}" type="text" disabled="true" class="form-control" aria-label="Share link" aria-describedby="button-share">
+    <button onclick="copyText()" class="btn btn-outline-secondary" type="button" id="button-share">Copy share link</button>
+</div>
+{% endif %}
+
 <div id="videos">
     {{ render_partial("partials/videos.html", rows=rows) }}
 </div>
