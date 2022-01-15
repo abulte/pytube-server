@@ -68,7 +68,7 @@ def index():
     videos = db.get_videos(
         start=start,
         end=end,
-        keys={"tags": tags},
+        keys={"tags": [t for t in tags if t]},
         has_route=route,
         limit=limit,
         offset=offset,
@@ -81,7 +81,7 @@ def index():
         "end": end,
         "route": route,
         "page": page,
-        "tags": db.get_tags(),
+        "tags": db.get_distinct_keys("tags"),
     }
 
     if "HX-Request" in request.headers:
