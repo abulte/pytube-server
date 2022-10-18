@@ -1,5 +1,6 @@
 output/
 !output/.gitkeep
-data/
+./data/
 videos.db*
+videos_test.db*
 *.egg-info
